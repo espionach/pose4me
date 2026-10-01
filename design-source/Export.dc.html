@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Export PDF</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&amp;family=Figtree:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:Figtree,'Helvetica Neue',sans-serif;color:#26211E;background:#EDE7DD}
+a{color:#26211E;text-decoration:none}a:hover{color:#C8375E}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; display: flex; flex-direction: column; padding: 52px 20px 0 20px; gap: 18px; background: #F3EDE4">
+
+<div style="display: flex; justify-content: space-between; align-items: center">
+<a href="Plan.dc.html" aria-label="Back to plan" style="width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; border: 1.5px solid #E6DED3; display: flex; align-items: center; justify-content: center; box-sizing: border-box">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#26211E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+</a>
+<h1 style="margin: 0; font-family: 'Young Serif', Georgia, serif; font-weight: 400; font-size: 22px">your shoot plan</h1>
+<div style="width: 44px"></div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 10px">
+<div style="position: relative; display: flex; justify-content: center; padding-top: 6px">
+<div style="position: relative; width: 290px; height: 400px; background: #FFFFFF; box-shadow: 0 14px 30px rgba(38,33,30,.14); padding: 22px 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; transform: {{tilt}}">
+<div style="display: flex; justify-content: space-between; align-items: flex-start">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<div style="font-family: 'Young Serif', Georgia, serif; font-size: 17px">golden hour picnic</div>
+<div style="font-size: 9px; color: #6B625B">Sat, Oct 4 · 6:15pm · 8 poses · 32 min</div>
+</div>
+</div>
+<div style="height: 1px; background: #EFE8DD"></div>
+<sc-if value="{{isList}}" hint-placeholder-val="{{ true }}">
+<sc-for list="{{rows}}" as="row" hint-placeholder-count="4">
+<div style="display: flex; gap: 10px; align-items: center">
+<div style="font-family: Figtree, 'Helvetica Neue', sans-serif; font-size: 15px; font-weight: 700; width: 16px">{{row.num}}</div>
+<div style="width: 44px; height: 56px; background: {{row.bg}}; border-radius: 8px; flex-shrink: 0"></div>
+<div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1">
+<div style="font-size: 10px; font-weight: 700">{{row.title}}</div>
+<div style="font-size: 9px; color: #6B625B">{{row.meta}}</div>
+<div style="font-family: Figtree, 'Helvetica Neue', sans-serif; font-size: 10px; color: #6B625B; line-height: 1.2">{{row.note}}</div>
+</div>
+</div>
+</sc-for>
+</sc-if>
+<sc-if value="{{isGrid}}" hint-placeholder-val="{{ false }}">
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 12px">
+<sc-for list="{{rows}}" as="row" hint-placeholder-count="4">
+<div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+<div style="position: relative; height: 96px; border-radius: 8px; background: {{row.bg}}">
+<span style="position: absolute; left: 5px; top: 5px; min-width: 20px; height: 20px; padding: 0 4px; box-sizing: border-box; border-radius: 10px; background: #FFFFFF; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{row.num}}</span>
+</div>
+<div style="font-size: 10px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{row.title}}</div>
+<div style="font-size: 9px; color: #6B625B">{{row.meta}}</div>
+<div style="font-size: 10px; color: #6B625B; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{row.note}}</div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+<div style="position: absolute; right: 16px; bottom: 12px; font-size: 9px; color: #6B625B">{{pageLabel}}</div>
+<div style="position: absolute; left: 110px; top: -9px; width: 70px; height: 18px; background: rgba(247,198,207,.9); transform: rotate(2deg)"></div>
+</div>
+<svg style="position: absolute; left: 14px; bottom: 16px" width="40" height="40" viewBox="0 0 24 24" fill="#CFE3C4" stroke="#26211E" stroke-width="1.2" stroke-linejoin="round"><path d="M12 2.5l2.8 6 6.5.7-4.9 4.4 1.4 6.4L12 16.8 6.2 20l1.4-6.4L2.7 9.2l6.5-.7z"></path></svg>
+<sc-if value="{{multi}}" hint-placeholder-val="{{ true }}">
+<button aria-label="Previous page" disabled="{{atStart}}" onClick="{{prev}}" style="position: absolute; left: 0; top: 184px; width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; border: 1.5px solid #E6DED3; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(38,33,30,.10); opacity: {{prevOpacity}}; cursor: pointer; z-index: 2">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#26211E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+</button>
+<button aria-label="Next page" disabled="{{atEnd}}" onClick="{{next}}" style="position: absolute; right: 0; top: 184px; width: 44px; height: 44px; border-radius: 22px; background: #26211E; border: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(38,33,30,.18); opacity: {{nextOpacity}}; cursor: pointer; z-index: 2">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+</button>
+</sc-if>
+</div>
+<sc-if value="{{multi}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; justify-content: center; gap: 2px">
+<sc-for list="{{dots}}" as="dot" hint-placeholder-count="2">
+<button aria-label="{{dot.label}}" onClick="{{dot.go}}" style="width: 22px; height: 16px; border: none; background: transparent; padding: 0; display: flex; align-items: center; justify-content: center; cursor: pointer"><span style="display: block; width: {{dot.w}}; height: 8px; border-radius: 4px; background: {{dot.color}}"></span></button>
+</sc-for>
+</div>
+</sc-if>
+</div>
+
+<div style="display: flex; flex-direction: column; background: #FFFFFF; border-radius: 22px; padding: 4px 16px; box-shadow: 0 2px 0 #E6DED3">
+<div style="display: flex; justify-content: space-between; align-items: center; height: 52px; border-bottom: 1px solid #F1EAE0">
+<label for="opt-notes" style="font-size: 15px; font-weight: 600">include notes</label>
+<button id="opt-notes" role="switch" aria-checked="true" style="width: 50px; height: 30px; border-radius: 15px; border: none; background: #26211E; padding: 3px; display: flex; justify-content: flex-end; box-sizing: border-box"><span style="width: 24px; height: 24px; border-radius: 12px; background: #FFFFFF; display: block"></span></button>
+</div>
+<div style="display: flex; justify-content: space-between; align-items: center; height: 52px">
+<div style="font-size: 15px; font-weight: 600">layout</div>
+<div style="display: flex; background: #F3EDE4; border-radius: 16px; padding: 3px">
+<button aria-pressed="{{isList}}" onClick="{{setList}}" style="height: 32px; padding: 0 14px; border-radius: 13px; border: none; background: {{listBg}}; font: 600 13px Figtree, sans-serif; color: #26211E; box-shadow: {{listShadow}}; cursor: pointer">list</button>
+<button aria-pressed="{{isGrid}}" onClick="{{setGrid}}" style="height: 32px; padding: 0 14px; border-radius: 13px; border: none; background: {{gridBg}}; font: 600 13px Figtree, sans-serif; color: #26211E; box-shadow: {{gridShadow}}; cursor: pointer">grid</button>
+</div>
+</div>
+</div>
+
+<div style="position: absolute; left: 20px; right: 20px; bottom: 32px; display: flex; gap: 10px">
+<button style="flex-grow: 1; height: 56px; border-radius: 28px; border: none; background: #26211E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 8px; font: 600 16px Figtree, sans-serif">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"></path></svg>download png</button>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { page: 0, layout: 'list' };
+this.poses = [
+{ bg: '#F7C6CF', title: 'sitting on the blanket, looking away', meta: 'Maya · 4 min', note: 'shoot low, 0.5x lens' },
+{ bg: '#F8E7A6', title: 'hand in hair, mid-laugh', meta: 'me · 3 min', note: 'burst mode! eye level' },
+{ bg: '#CFE0F2', title: 'jumping together, arms up', meta: 'Maya, Zoe · 5 min', note: 'from the ground looking up' },
+{ bg: '#CFE3C4', title: 'flatlay with snacks + film camera', meta: 'Zoe · 3 min', note: 'straight down, stand on bench' },
+{ bg: '#E2D5F2', title: 'twirling in the dress', meta: 'Maya · 4 min', note: 'slow shutter for motion blur' },
+{ bg: '#F7C6CF', title: 'over-the-shoulder look back', meta: 'me · 3 min', note: 'sun behind, catch the flare' },
+{ bg: '#CFE0F2', title: 'lying on the blanket, top-down', meta: 'Maya, Zoe · 5 min', note: 'stand on the cooler, 0.5x' },
+{ bg: '#F8E7A6', title: 'walking away, holding hands', meta: 'Maya, Zoe · 5 min', note: 'shoot from behind at hip level' }
+];
+}
+renderVals() {
+const per = 4;
+const pages = Math.max(1, Math.ceil(this.poses.length / per));
+const pg = Math.min(this.state.page, pages - 1);
+const last = pages - 1;
+const grid = this.state.layout === 'grid';
+const on = '#FFFFFF', onShadow = '0 1px 3px rgba(38,33,30,.12)';
+return {
+isList: !grid,
+isGrid: grid,
+setList: () => this.setState({ layout: 'list' }),
+setGrid: () => this.setState({ layout: 'grid' }),
+listBg: grid ? 'transparent' : on,
+gridBg: grid ? on : 'transparent',
+listShadow: grid ? 'none' : onShadow,
+gridShadow: grid ? onShadow : 'none',
+rows: this.poses.slice(pg * per, pg * per + per).map((p, i) => ({
+num: (pg * per + i < 9 ? '0' : '') + (pg * per + i + 1),
+bg: p.bg,
+title: p.title,
+meta: p.meta,
+note: p.note
+})),
+pageLabel: 'page ' + (pg + 1) + ' of ' + pages,
+tilt: pg % 2 ? 'rotate(1.2deg)' : 'rotate(-1.2deg)',
+multi: pages > 1,
+atStart: pg === 0,
+atEnd: pg === last,
+prevOpacity: pg === 0 ? '0.35' : '1',
+nextOpacity: pg === last ? '0.35' : '1',
+prev: () => this.setState({ page: Math.max(0, pg - 1) }),
+next: () => this.setState({ page: Math.min(last, pg + 1) }),
+dots: Array.from({ length: pages }, (_, i) => ({
+label: 'Go to page ' + (i + 1),
+w: i === pg ? '20px' : '8px',
+color: i === pg ? '#26211E' : '#D9D0C5',
+go: () => this.setState({ page: i })
+}))
+};
+}
+}
+</script>
+</body>
+</html>

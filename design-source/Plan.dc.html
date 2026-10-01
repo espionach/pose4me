@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Shoot plan</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&amp;family=Figtree:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:Figtree,'Helvetica Neue',sans-serif;color:#26211E;background:#EDE7DD}
+a{color:#26211E;text-decoration:none}a:hover{color:#C8375E}
+.paper{background-color:#FBF8F3;background-image:radial-gradient(rgba(38,33,30,.05) 1px,transparent 1px);background-size:14px 14px}
+</style>
+</helmet>
+<div class="paper" style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; display: flex; flex-direction: column; padding: 52px 20px 0 20px; gap: 16px">
+
+<sc-if value="{{notSelecting}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; justify-content: space-between; align-items: center">
+<a href="Main.dc.html" aria-label="Back to my shoots" style="width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; border: 1.5px solid #E6DED3; display: flex; align-items: center; justify-content: center; box-sizing: border-box">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#26211E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+</a>
+<sc-if value="{{notEditing}}" hint-placeholder-val="{{ true }}">
+<button aria-label="Edit shoot details" onClick="{{startEdit}}" style="width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; border: 1.5px solid #E6DED3; display: flex; align-items: center; justify-content: center; cursor: pointer">
+<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#26211E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z"></path><path d="M13.5 6.5l4 4"></path></svg>
+</button>
+</sc-if>
+<sc-if value="{{editing}}" hint-placeholder-val="{{ false }}">
+<button onClick="{{doneEdit}}" style="height: 44px; padding: 0 18px; border-radius: 22px; background: #26211E; border: none; color: #FFFFFF; font: 600 15px Figtree, sans-serif; display: flex; align-items: center; gap: 6px; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>done</button>
+</sc-if>
+</div>
+</sc-if>
+<sc-if value="{{selecting}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; justify-content: space-between; align-items: center; height: 44px">
+<div style="font-size: 16px; font-weight: 700; padding-left: 4px">{{selCount}}</div>
+<div style="display: flex; gap: 8px">
+<button onClick="{{cancelSel}}" style="height: 44px; padding: 0 18px; border-radius: 22px; background: #FFFFFF; border: 1.5px solid #E6DED3; font: 600 15px Figtree, sans-serif; color: #26211E; cursor: pointer">cancel</button>
+<button onClick="{{deleteSel}}" disabled="{{noneSel}}" style="height: 44px; padding: 0 18px; border-radius: 22px; background: #C8375E; border: none; font: 600 15px Figtree, sans-serif; color: #FFFFFF; display: flex; align-items: center; gap: 6px; opacity: {{delOpacity}}; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"></path></svg>{{delLabel}}</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{notEditing}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 0 4px">
+<h1 style="margin: 0; font-family: 'Young Serif', Georgia, serif; font-weight: 400; font-size: 32px; line-height: 1.1">{{title}}</h1>
+<div style="display: flex; gap: 12px; align-items: center; white-space: nowrap">
+<div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#26211E" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>{{when}}</div>
+<div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#26211E" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="13" r="8"></circle><path d="M12 9v4l3 2"></path></svg>32 min total</div>
+<div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#26211E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"></rect><path d="M3 16l5-5 4 4 3-3 6 6"></path></svg>8 poses</div>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{editing}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 0 4px">
+<label for="shoot-title" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Shoot title</label>
+<input id="shoot-title" value="{{title}}" onChange="{{onTitle}}" style="height: 48px; border: 1.5px solid #26211E; border-radius: 14px; background: #FFFFFF; padding: 0 12px; font-family: 'Young Serif', Georgia, serif; font-size: 26px; color: #26211E; outline: none; box-sizing: border-box; width: 100%">
+<div style="display: flex; gap: 8px">
+<label style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; color: #6B625B">date
+<input type="date" value="{{date}}" onChange="{{onDate}}" style="height: 44px; border: 1.5px solid #E6DED3; border-radius: 14px; background: #FFFFFF; padding: 0 10px; font: 600 14px Figtree, sans-serif; color: #26211E; text-transform: none; letter-spacing: 0; box-sizing: border-box; width: 100%"></label>
+<label style="width: 128px; flex-shrink: 0; display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; color: #6B625B">time
+<input type="time" value="{{time}}" onChange="{{onTime}}" style="height: 44px; border: 1.5px solid #E6DED3; border-radius: 14px; background: #FFFFFF; padding: 0 10px; font: 600 14px Figtree, sans-serif; color: #26211E; text-transform: none; letter-spacing: 0; box-sizing: border-box; width: 100%"></label>
+</div>
+</div>
+</sc-if>
+
+<div style="display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #6B625B; padding: 0 4px; margin-bottom: 8px">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="#6B625B"><circle cx="9" cy="6" r="1.6"></circle><circle cx="15" cy="6" r="1.6"></circle><circle cx="9" cy="12" r="1.6"></circle><circle cx="15" cy="12" r="1.6"></circle><circle cx="9" cy="18" r="1.6"></circle><circle cx="15" cy="18" r="1.6"></circle></svg>
+drag to reorder · press and hold to select</div>
+<sc-for list="{{poses}}" as="pose" hint-placeholder-count="4">
+<sc-if value="{{pose.normal}}" hint-placeholder-val="{{ true }}">
+<a href="Pose.dc.html" draggable="true" onDragStart="{{pose.onDragStart}}" onDragOver="{{pose.onDragOver}}" onDrop="{{pose.onDrop}}" onDragEnd="{{pose.onDragEnd}}" onPointerDown="{{pose.onPressStart}}" onPointerUp="{{pose.onPressEnd}}" onPointerLeave="{{pose.onPressEnd}}" onClick="{{pose.onLinkClick}}" onContextMenu="{{pose.onContext}}" style="display: flex; gap: 14px; align-items: stretch; background: #FFFFFF; border-radius: 22px; padding: 12px; box-shadow: {{pose.shadow}}; position: relative; opacity: {{pose.opacity}}; cursor: grab; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none">
+<div style="flex-shrink: 0; width: 92px; height: 116px; position: relative; border-radius: 14px; background: {{pose.bg}}; display: flex; align-items: flex-end; justify-content: center; overflow: hidden">
+<sc-if value="{{pose.isSit}}" hint-placeholder-val="{{ true }}"><svg width="56" height="78" viewBox="0 0 100 140" fill="none" stroke="#26211E" stroke-opacity=".55" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="44" cy="40" r="11"></circle><path d="M46 51L52 92L80 94L84 122M52 92L30 100M48 60L66 76M48 60L32 84"></path></svg></sc-if>
+<sc-if value="{{pose.isStand}}" hint-placeholder-val="{{ false }}"><svg width="56" height="78" viewBox="0 0 100 140" fill="none" stroke="#26211E" stroke-opacity=".55" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="50" cy="28" r="11"></circle><path d="M50 39L50 84M50 50L34 66L44 76M50 50L66 64L72 44M50 84L40 124M50 84L60 124"></path></svg></sc-if>
+<sc-if value="{{pose.isJump}}" hint-placeholder-val="{{ false }}"><svg width="56" height="78" viewBox="0 0 100 140" fill="none" stroke="#26211E" stroke-opacity=".55" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="50" cy="30" r="11"></circle><path d="M50 41L50 86M50 52L30 26M50 52L70 26M50 86L36 118M50 86L66 110L58 126"></path></svg></sc-if>
+<sc-if value="{{pose.showCheck}}" hint-placeholder-val="{{ false }}"><span style="position: absolute; left: 8px; top: 8px; width: 24px; height: 24px; border-radius: 12px; background: #26211E; display: flex; align-items: center; justify-content: center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span></sc-if>
+<sc-if value="{{pose.showEmpty}}" hint-placeholder-val="{{ false }}"><span style="position: absolute; left: 8px; top: 8px; width: 24px; height: 24px; border-radius: 12px; border: 2px solid #FFFFFF; background: rgba(38,33,30,.12); box-sizing: border-box"></span></sc-if>
+</div>
+<div style="flex-grow: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0">
+<div style="display: flex; justify-content: space-between; align-items: center">
+<div style="font-family: Figtree, 'Helvetica Neue', sans-serif; font-size: 22px; font-weight: 700; line-height: 1">{{pose.num}}</div>
+<div style="display: flex; align-items: center; gap: 6px">
+<div style="height: 24px; padding: 0 9px; border-radius: 12px; background: #FBF8F3; border: 1px solid #E6DED3; display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#26211E" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="13" r="8"></circle><path d="M12 9v4"></path></svg>{{pose.time}}</div>
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="#B9AFA4"><circle cx="9" cy="6" r="1.7"></circle><circle cx="15" cy="6" r="1.7"></circle><circle cx="9" cy="12" r="1.7"></circle><circle cx="15" cy="12" r="1.7"></circle><circle cx="9" cy="18" r="1.7"></circle><circle cx="15" cy="18" r="1.7"></circle></svg>
+</div>
+</div>
+<div style="font-weight: 600; font-size: 15px; line-height: 1.25">{{pose.title}}</div>
+<div style="display: flex; gap: 6px">
+<sc-for list="{{pose.who}}" as="w" hint-placeholder-count="1"><div style="height: 22px; padding: 0 9px; border-radius: 11px; background: {{w.bg}}; font-size: 12px; font-weight: 600; display: flex; align-items: center">{{w.label}}</div></sc-for>
+</div>
+<div style="font-family: Figtree, 'Helvetica Neue', sans-serif; font-weight: 400; font-size: 13px; color: #6B625B; line-height: 1.35">{{pose.note}}</div>
+</div>
+<span aria-hidden="true" style="position: absolute; left: {{pose.sc.left}}; top: {{pose.sc.top}}; right: {{pose.sc.right}}; bottom: {{pose.sc.bottom}}; transform: rotate({{pose.sc.rot}}) scale(0.72); display: block; line-height: 0; pointer-events: none; z-index: 2">
+<sc-if value="{{pose.sc.star}}" hint-placeholder-val="{{ false }}"><svg width="38" height="38" viewBox="0 0 40 40" fill="#F8E7A6" stroke="#26211E" stroke-width="1.8" stroke-linejoin="round"><path d="M20 4l4.7 10 11 1.2-8.2 7.4 2.3 10.8L20 28l-9.8 5.4 2.3-10.8-8.2-7.4 11-1.2z"></path></svg></sc-if>
+<sc-if value="{{pose.sc.burst}}" hint-placeholder-val="{{ false }}"><svg width="38" height="38" viewBox="0 0 40 40" fill="none" stroke="#C8375E" stroke-width="2.6" stroke-linecap="round"><path d="M20 4v8M20 28v8M4 20h8M28 20h8M9 9l5 5M26 26l5 5M31 9l-5 5M14 26l-5 5"></path></svg></sc-if>
+<sc-if value="{{pose.sc.spiral}}" hint-placeholder-val="{{ false }}"><svg width="38" height="38" viewBox="0 0 40 40" fill="none" stroke="#7FA7D6" stroke-width="2.6" stroke-linecap="round"><path d="M21 20c0-2.5-4-2.5-4 0s5 5 8 1.5-2-10-8-7.5-8 11 0 13.5 14-3 12.5-11-10-13-17-7.5"></path></svg></sc-if>
+<sc-if value="{{pose.sc.squiggle}}" hint-placeholder-val="{{ false }}"><svg width="44" height="22" viewBox="0 0 44 22" fill="none" stroke="#C8375E" stroke-width="2.8" stroke-linecap="round"><path d="M3 14c4-9 7 7 11 0s7 7 11 0 7 7 11 0 5 5 5 1"></path></svg></sc-if>
+<sc-if value="{{pose.sc.flower}}" hint-placeholder-val="{{ false }}"><svg width="38" height="38" viewBox="0 0 40 40" stroke="#26211E" stroke-width="1.6"><circle cx="20" cy="10" r="6.5" fill="#F7C6CF"></circle><circle cx="29.5" cy="17" r="6.5" fill="#F7C6CF"></circle><circle cx="26" cy="28" r="6.5" fill="#F7C6CF"></circle><circle cx="14" cy="28" r="6.5" fill="#F7C6CF"></circle><circle cx="10.5" cy="17" r="6.5" fill="#F7C6CF"></circle><circle cx="20" cy="20" r="5" fill="#F8E7A6"></circle></svg></sc-if>
+<sc-if value="{{pose.sc.sparkle}}" hint-placeholder-val="{{ false }}"><svg width="36" height="36" viewBox="0 0 40 40" fill="#CFE0F2" stroke="#26211E" stroke-width="1.8" stroke-linejoin="round"><path d="M20 3c1.2 9.5 7.5 15.8 17 17-9.5 1.2-15.8 7.5-17 17-1.2-9.5-7.5-15.8-17-17 9.5-1.2 15.8-7.5 17-17z"></path></svg></sc-if>
+<sc-if value="{{pose.sc.smiley}}" hint-placeholder-val="{{ false }}"><svg width="36" height="36" viewBox="0 0 40 40" stroke="#26211E" stroke-width="1.8" stroke-linecap="round"><circle cx="20" cy="20" r="15" fill="#F8E7A6"></circle><circle cx="14.5" cy="17" r="1.8" fill="#26211E" stroke="none"></circle><circle cx="25.5" cy="17" r="1.8" fill="#26211E" stroke="none"></circle><path d="M13 23.5c3.5 5 10.5 5 14 0" fill="none"></path></svg></sc-if>
+<sc-if value="{{pose.sc.bolt}}" hint-placeholder-val="{{ false }}"><svg width="32" height="38" viewBox="0 0 34 40" fill="#E2D5F2" stroke="#26211E" stroke-width="1.8" stroke-linejoin="round"><path d="M20 2L5 23h10l-4 15 18-22H18z"></path></svg></sc-if>
+<sc-if value="{{pose.sc.moon}}" hint-placeholder-val="{{ false }}"><svg width="34" height="34" viewBox="0 0 40 40" fill="#E2D5F2" stroke="#26211E" stroke-width="1.8" stroke-linejoin="round"><path d="M26 5a15 15 0 1 0 10 24A12 12 0 0 1 26 5z"></path><circle cx="31" cy="10" r="1.6" fill="#26211E" stroke="none"></circle></svg></sc-if>
+<sc-if value="{{pose.sc.rainbow}}" hint-placeholder-val="{{ false }}"><svg width="44" height="26" viewBox="0 0 44 26" fill="none" stroke-width="3.2" stroke-linecap="round"><path d="M4 24a18 18 0 0 1 36 0" stroke="#F7C6CF"></path><path d="M10 24a12 12 0 0 1 24 0" stroke="#F8E7A6"></path><path d="M16 24a6 6 0 0 1 12 0" stroke="#CFE0F2"></path></svg></sc-if>
+<sc-if value="{{pose.sc.cloud}}" hint-placeholder-val="{{ false }}"><svg width="42" height="30" viewBox="0 0 42 30" fill="#FFFFFF" stroke="#26211E" stroke-width="1.8" stroke-linejoin="round"><path d="M11 26h21a7 7 0 0 0 0-14 10 10 0 0 0-18.5-3A8 8 0 0 0 11 26z"></path></svg></sc-if>
+<sc-if value="{{pose.sc.loop}}" hint-placeholder-val="{{ false }}"><svg width="46" height="26" viewBox="0 0 46 26" fill="none" stroke="#B08FD8" stroke-width="2.6" stroke-linecap="round"><path d="M3 18c6 0 9-12 4-12s-3 14 7 14 7-14 14-14 5 14 15 12"></path></svg></sc-if>
+<sc-if value="{{pose.sc.crown}}" hint-placeholder-val="{{ false }}"><svg width="40" height="32" viewBox="0 0 40 32" fill="#F8E7A6" stroke="#26211E" stroke-width="1.8" stroke-linejoin="round"><path d="M5 28L3 8l9 8 8-13 8 13 9-8-2 20z"></path><circle cx="20" cy="21" r="2" fill="#C8375E" stroke="none"></circle></svg></sc-if>
+<sc-if value="{{pose.sc.asterisk}}" hint-placeholder-val="{{ false }}"><svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="#C8375E" stroke-width="3" stroke-linecap="round"><path d="M20 5v30M7 12.5l26 15M7 27.5l26-15"></path></svg></sc-if>
+<sc-if value="{{pose.sc.cherry}}" hint-placeholder-val="{{ false }}"><svg width="36" height="38" viewBox="0 0 36 40" stroke="#26211E" stroke-width="1.8" stroke-linecap="round"><path d="M11 27c2-9 6-17 13-22M25 29c0-8 0-16-1-24M24 5c3-1 7 0 8 3-3 1-6 0-8-3z" fill="none"></path><circle cx="10" cy="30" r="6" fill="#C8375E"></circle><circle cx="25" cy="32" r="6" fill="#C8375E"></circle></svg></sc-if>
+<sc-if value="{{pose.sc.bow}}" hint-placeholder-val="{{ false }}"><svg width="42" height="30" viewBox="0 0 42 30" fill="#F7C6CF" stroke="#26211E" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M21 13C14 3 3 4 4 12s12 8 17 1zM21 13c7-10 18-9 17-1s-12 8-17 1z"></path><path d="M19 15l-5 12M23 15l5 12" fill="none"></path><circle cx="21" cy="13" r="3" fill="#C8375E"></circle></svg></sc-if>
+</span>
+</a>
+</sc-if>
+<sc-if value="{{pose.inSelect}}" hint-placeholder-val="{{ false }}">
+<button aria-pressed="{{pose.selected}}" aria-label="{{pose.selLabel}}" onClick="{{pose.toggle}}" style="display: flex; gap: 14px; align-items: stretch; width: 100%; text-align: left; font: inherit; color: #26211E; border: none; background: #FFFFFF; border-radius: 22px; padding: 12px; box-shadow: {{pose.selShadow}}; position: relative; cursor: pointer; user-select: none; -webkit-user-select: none">
+<div style="flex-shrink: 0; width: 92px; height: 116px; position: relative; border-radius: 14px; background: {{pose.bg}}; display: flex; align-items: flex-end; justify-content: center; overflow: hidden">
+<sc-if value="{{pose.isSit}}" hint-placeholder-val="{{ true }}"><svg width="56" height="78" viewBox="0 0 100 140" fill="none" stroke="#26211E" stroke-opacity=".55" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="44" cy="40" r="11"></circle><path d="M46 51L52 92L80 94L84 122M52 92L30 100M48 60L66 76M48 60L32 84"></path></svg></sc-if>
+<sc-if value="{{pose.isStand}}" hint-placeholder-val="{{ false }}"><svg width="56" height="78" viewBox="0 0 100 140" fill="none" stroke="#26211E" stroke-opacity=".55" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="50" cy="28" r="11"></circle><path d="M50 39L50 84M50 50L34 66L44 76M50 50L66 64L72 44M50 84L40 124M50 84L60 124"></path></svg></sc-if>
+<sc-if value="{{pose.isJump}}" hint-placeholder-val="{{ false }}"><svg width="56" height="78" viewBox="0 0 100 140" fill="none" stroke="#26211E" stroke-opacity=".55" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="50" cy="30" r="11"></circle><path d="M50 41L50 86M50 52L30 26M50 52L70 26M50 86L36 118M50 86L66 110L58 126"></path></svg></sc-if>
+<sc-if value="{{pose.showCheck}}" hint-placeholder-val="{{ false }}"><span style="position: absolute; left: 8px; top: 8px; width: 24px; height: 24px; border-radius: 12px; background: #26211E; display: flex; align-items: center; justify-content: center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span></sc-if>
+<sc-if value="{{pose.showEmpty}}" hint-placeholder-val="{{ false }}"><span style="position: absolute; left: 8px; top: 8px; width: 24px; height: 24px; border-radius: 12px; border: 2px solid #FFFFFF; background: rgba(38,33,30,.12); box-sizing: border-box"></span></sc-if>
+</div>
+<div style="flex-grow: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0">
+<div style="display: flex; justify-content: space-between; align-items: center">
+<div style="font-family: Figtree, 'Helvetica Neue', sans-serif; font-size: 22px; font-weight: 700; line-height: 1">{{pose.num}}</div>
+<div style="display: flex; align-items: center; gap: 6px">
+<div style="height: 24px; padding: 0 9px; border-radius: 12px; background: #FBF8F3; border: 1px solid #E6DED3; display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#26211E" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="13" r="8"></circle><path d="M12 9v4"></path></svg>{{pose.time}}</div>
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="#B9AFA4"><circle cx="9" cy="6" r="1.7"></circle><circle cx="15" cy="6" r="1.7"></circle><circle cx="9" cy="12" r="1.7"></circle><circle cx="15" cy="12" r="1.7"></circle><circle cx="9" cy="18" r="1.7"></circle><circle cx="15" cy="18" r="1.7"></circle></svg>
+</div>
+</div>
+<div style="font-weight: 600; font-size: 15px; line-height: 1.25">{{pose.title}}</div>
+<div style="display: flex; gap: 6px">
+<sc-for list="{{pose.who}}" as="w" hint-placeholder-count="1"><div style="height: 22px; padding: 0 9px; border-radius: 11px; background: {{w.bg}}; font-size: 12px; font-weight: 600; display: flex; align-items: center">{{w.label}}</div></sc-for>
+</div>
+<div style="font-family: Figtree, 'Helvetica Neue', sans-serif; font-weight: 400; font-size: 13px; color: #6B625B; line-height: 1.35">{{pose.note}}</div>
+</div>
+<span aria-hidden="true" style="position: absolute; left: {{pose.sc.left}}; top: {{pose.sc.top}}; right: {{pose.sc.right}}; bottom: {{pose.sc.bottom}}; transform: rotate({{pose.sc.rot}}) scale(0.72); display: block; line-height: 0; pointer-events: none; z-index: 2">
+<sc-if value="{{pose.sc.star}}" hint-placeholder-val="{{ false }}"><svg width="38" height="38" viewBox="0 0 40 40" fill="#F8E7A6" stroke="#26211E" stroke-width="1.8" stroke-linejoin="round"><path d="M20 4l4.7 10 11 1.2-8.2 7.4 2.3 10.8L20 28l-9.8 5.4 2.3-10.8-8.2-7.4 11-1.2z"></path></svg></sc-if>
+<sc-if value="{{pose.sc.burst}}" hint-placeholder-val="{{ false }}"><svg width="38" height="38" viewBox="0 0 40 40" fill="none" stroke="#C8375E" stroke-width="2.6" stroke-linecap="round"><path d="M20 4v8M20 28v8M4 20h8M28 20h8M9 9l5 5M26 26l5 5M31 9l-5 5M14 26l-5 5"></path></svg></sc-if>
+<sc-if value="{{pose.sc.spiral}}" hint-placeholder-val="{{ false }}"><svg width="38" height="38" viewBox="0 0 40 40" fill="none" stroke="#7FA7D6" stroke-width="2.6" stroke-linecap="round"><path d="M21 20c0-2.5-4-2.5-4 0s5 5 8 1.5-2-10-8-7.5-8 11 0 13.5 14-3 12.5-11-10-13-17-7.5"></path></svg></sc-if>
+<sc-if value="{{pose.sc.squiggle}}" hint-placeholder-val="{{ false }}"><svg width="44" height="22" viewBox="0 0 44 22" fill="none" stroke="#C8375E" stroke-width="2.8" stroke-linecap="round"><path d="M3 14c4-9 7 7 11 0s7 7 11 0 7 7 11 0 5 5 5 1"></path></svg></sc-if>
+<sc-if value="{{pose.sc.flower}}" hint-placeholder-val="{{ false }}"><svg width="38" height="38" viewBox="0 0 40 40" stroke="#26211E" stroke-width="1.6"><circle cx="20" cy="10" r="6.5" fill="#F7C6CF"></circle><circle cx="29.5" cy="17" r="6.5" fill="#F7C6CF"></circle><circle cx="26" cy="28" r="6.5" fill="#F7C6CF"></circle><circle cx="14" cy="28" r="6.5" fill="#F7C6CF"></circle><circle cx="10.5" cy="17" r="6.5" fill="#F7C6CF"></circle><circle cx="20" cy="20" r="5" fill="#F8E7A6"></circle></svg></sc-if>
+<sc-if value="{{pose.sc.sparkle}}" hint-placeholder-val="{{ false }}"><svg width="36" height="36" viewBox="0 0 40 40" fill="#CFE0F2" stroke="#26211E" stroke-width="1.8" stroke-linejoin="round"><path d="M20 3c1.2 9.5 7.5 15.8 17 17-9.5 1.2-15.8 7.5-17 17-1.2-9.5-7.5-15.8-17-17 9.5-1.2 15.8-7.5 17-17z"></path></svg></sc-if>
+<sc-if value="{{pose.sc.smiley}}" hint-placeholder-val="{{ false }}"><svg width="36" height="36" viewBox="0 0 40 40" stroke="#26211E" stroke-width="1.8" stroke-linecap="round"><circle cx="20" cy="20" r="15" fill="#F8E7A6"></circle><circle cx="14.5" cy="17" r="1.8" fill="#26211E" stroke="none"></circle><circle cx="25.5" cy="17" r="1.8" fill="#26211E" stroke="none"></circle><path d="M13 23.5c3.5 5 10.5 5 14 0" fill="none"></path></svg></sc-if>
+<sc-if value="{{pose.sc.bolt}}" hint-placeholder-val="{{ false }}"><svg width="32" height="38" viewBox="0 0 34 40" fill="#E2D5F2" stroke="#26211E" stroke-width="1.8" stroke-linejoin="round"><path d="M20 2L5 23h10l-4 15 18-22H18z"></path></svg></sc-if>
+<sc-if value="{{pose.sc.moon}}" hint-placeholder-val="{{ false }}"><svg width="34" height="34" viewBox="0 0 40 40" fill="#E2D5F2" stroke="#26211E" stroke-width="1.8" stroke-linejoin="round"><path d="M26 5a15 15 0 1 0 10 24A12 12 0 0 1 26 5z"></path><circle cx="31" cy="10" r="1.6" fill="#26211E" stroke="none"></circle></svg></sc-if>
+<sc-if value="{{pose.sc.rainbow}}" hint-placeholder-val="{{ false }}"><svg width="44" height="26" viewBox="0 0 44 26" fill="none" stroke-width="3.2" stroke-linecap="round"><path d="M4 24a18 18 0 0 1 36 0" stroke="#F7C6CF"></path><path d="M10 24a12 12 0 0 1 24 0" stroke="#F8E7A6"></path><path d="M16 24a6 6 0 0 1 12 0" stroke="#CFE0F2"></path></svg></sc-if>
+<sc-if value="{{pose.sc.cloud}}" hint-placeholder-val="{{ false }}"><svg width="42" height="30" viewBox="0 0 42 30" fill="#FFFFFF" stroke="#26211E" stroke-width="1.8" stroke-linejoin="round"><path d="M11 26h21a7 7 0 0 0 0-14 10 10 0 0 0-18.5-3A8 8 0 0 0 11 26z"></path></svg></sc-if>
+<sc-if value="{{pose.sc.loop}}" hint-placeholder-val="{{ false }}"><svg width="46" height="26" viewBox="0 0 46 26" fill="none" stroke="#B08FD8" stroke-width="2.6" stroke-linecap="round"><path d="M3 18c6 0 9-12 4-12s-3 14 7 14 7-14 14-14 5 14 15 12"></path></svg></sc-if>
+<sc-if value="{{pose.sc.crown}}" hint-placeholder-val="{{ false }}"><svg width="40" height="32" viewBox="0 0 40 32" fill="#F8E7A6" stroke="#26211E" stroke-width="1.8" stroke-linejoin="round"><path d="M5 28L3 8l9 8 8-13 8 13 9-8-2 20z"></path><circle cx="20" cy="21" r="2" fill="#C8375E" stroke="none"></circle></svg></sc-if>
+<sc-if value="{{pose.sc.asterisk}}" hint-placeholder-val="{{ false }}"><svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="#C8375E" stroke-width="3" stroke-linecap="round"><path d="M20 5v30M7 12.5l26 15M7 27.5l26-15"></path></svg></sc-if>
+<sc-if value="{{pose.sc.cherry}}" hint-placeholder-val="{{ false }}"><svg width="36" height="38" viewBox="0 0 36 40" stroke="#26211E" stroke-width="1.8" stroke-linecap="round"><path d="M11 27c2-9 6-17 13-22M25 29c0-8 0-16-1-24M24 5c3-1 7 0 8 3-3 1-6 0-8-3z" fill="none"></path><circle cx="10" cy="30" r="6" fill="#C8375E"></circle><circle cx="25" cy="32" r="6" fill="#C8375E"></circle></svg></sc-if>
+<sc-if value="{{pose.sc.bow}}" hint-placeholder-val="{{ false }}"><svg width="42" height="30" viewBox="0 0 42 30" fill="#F7C6CF" stroke="#26211E" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M21 13C14 3 3 4 4 12s12 8 17 1zM21 13c7-10 18-9 17-1s-12 8-17 1z"></path><path d="M19 15l-5 12M23 15l5 12" fill="none"></path><circle cx="21" cy="13" r="3" fill="#C8375E"></circle></svg></sc-if>
+</span>
+</button>
+</sc-if>
+</sc-for>
+</div>
+
+<div style="position: absolute; z-index: 4; left: 0; right: 0; bottom: 0; height: 132px; background: linear-gradient(rgba(251,248,243,0), #FBF8F3 42%)"></div>
+<div style="position: absolute; z-index: 5; left: 20px; right: 20px; bottom: 32px; display: flex; gap: 10px">
+<a href="Import.dc.html" style="flex-grow: 1; height: 56px; border-radius: 28px; background: #FFFFFF; border: 1.5px solid #26211E; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 16px; font-weight: 600; box-sizing: border-box">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#26211E" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>add poses</a>
+<a href="Export.dc.html" style="flex-grow: 1; height: 56px; border-radius: 28px; background: #26211E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 16px; font-weight: 600">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"></path></svg>export pdf</a>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.lp = null;
+this.justLP = false;
+const SCRIBBLES = ['star', 'burst', 'spiral', 'squiggle', 'flower', 'sparkle', 'smiley', 'bolt', 'moon', 'rainbow', 'cloud', 'loop', 'crown', 'asterisk', 'cherry', 'bow'];
+function scribbleFor(keys, sides) {
+const pool = keys.slice();
+const sh = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
+sh(pool);
+let sideBag = [];
+let n = 0;
+const r = (a, b) => Math.round(a + Math.random() * (b - a));
+return function () {
+const type = pool[n++ % pool.length];
+if (!sideBag.length) sideBag = sh(Object.keys(sides));
+const pos = sides[sideBag.pop()](r);
+const o = { top: 'auto', left: 'auto', right: 'auto', bottom: 'auto', rot: r(-28, 28) + 'deg' };
+Object.keys(pos).forEach((k) => { o[k] = pos[k] + 'px'; });
+keys.forEach((k) => { o[k] = k === type; });
+return o;
+};
+}
+const pick = scribbleFor(SCRIBBLES, { top: (r) => ({ top: r(-12, -8), left: r(0, 60) }), bottom: (r) => ({ bottom: r(-12, -8), left: r(0, 60) }), left: (r) => ({ left: r(-14, -10), top: r(4, 96) }) });
+this.sc = { 1: pick(), 2: pick(), 3: pick(), 4: pick() };
+this.state = {
+drag: null,
+editing: false,
+title: 'golden hour picnic',
+date: '2026-10-04',
+time: '18:15',
+selecting: false,
+selected: [],
+poses: [
+{ id: 1, bg: '#F7C6CF', fig: 'sit', mins: 4, title: 'sitting on the blanket, looking away', who: ['Maya'], note: 'shoot low, 0.5x lens, get the sun behind her' },
+{ id: 2, bg: '#F8E7A6', fig: 'stand', mins: 3, title: 'hand in hair, mid-laugh', who: ['me'], note: 'burst mode! eye level, close crop' },
+{ id: 3, bg: '#CFE0F2', fig: 'jump', mins: 5, title: 'jumping together, arms up', who: ['Maya', 'Zoe'], note: 'from the ground looking up, count to 3' },
+{ id: 4, bg: '#CFE3C4', fig: 'sit', mins: 3, title: 'flatlay with snacks + film camera', who: ['Zoe'], note: 'straight down, stand on bench' }
+]
+};
+}
+componentWillUnmount() { clearTimeout(this.lp); }
+cancelPress() { clearTimeout(this.lp); this.lp = null; }
+fmtWhen() {
+const d = this.state.date, t = this.state.time;
+let out = '';
+if (d) {
+const parts = d.split('-').map(Number);
+const dt = new Date(parts[0], parts[1] - 1, parts[2]);
+const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+out = days[dt.getDay()] + ', ' + months[dt.getMonth()] + ' ' + dt.getDate();
+}
+if (t) {
+const hm = t.split(':').map(Number);
+const h12 = hm[0] % 12 === 0 ? 12 : hm[0] % 12;
+out += (out ? ' · ' : '') + h12 + ':' + (hm[1] < 10 ? '0' : '') + hm[1] + (hm[0] < 12 ? 'am' : 'pm');
+}
+return out || 'add date';
+}
+renderVals() {
+const chipBg = { me: '#F7C6CF', Maya: '#CFE3C4', Zoe: '#E2D5F2' };
+const drag = this.state.drag;
+const selecting = this.state.selecting;
+const sel = this.state.selected;
+const n = sel.length;
+return {
+editing: this.state.editing,
+notEditing: !this.state.editing,
+title: this.state.title,
+date: this.state.date,
+time: this.state.time,
+when: this.fmtWhen(),
+startEdit: () => this.setState({ editing: true }),
+doneEdit: () => this.setState({ editing: false, title: this.state.title.trim() || 'untitled shoot' }),
+onTitle: (e) => this.setState({ title: e.target.value }),
+onDate: (e) => this.setState({ date: e.target.value }),
+onTime: (e) => this.setState({ time: e.target.value }),
+selecting: selecting,
+notSelecting: !selecting,
+selCount: n + ' selected',
+noneSel: n === 0,
+delOpacity: n === 0 ? '0.4' : '1',
+delLabel: n === 1 ? 'delete pose' : 'delete poses',
+cancelSel: () => this.setState({ selecting: false, selected: [] }),
+deleteSel: () => {
+const s = this.state.selected;
+if (!s.length) return;
+this.setState({ poses: this.state.poses.filter((p) => s.indexOf(p.id) < 0), selecting: false, selected: [] });
+},
+poses: this.state.poses.map((p, i) => {
+const isSel = sel.indexOf(p.id) >= 0;
+return {
+num: (i < 9 ? '0' : '') + (i + 1),
+bg: p.bg,
+isSit: p.fig === 'sit',
+isStand: p.fig === 'stand',
+isJump: p.fig === 'jump',
+time: p.mins + ' min',
+title: p.title,
+sc: this.sc[p.id],
+note: p.note,
+who: p.who.map((w) => ({ label: w, bg: chipBg[w] })),
+normal: !selecting,
+inSelect: selecting,
+selected: isSel,
+showCheck: selecting && isSel,
+showEmpty: selecting && !isSel,
+selLabel: (isSel ? 'Deselect ' : 'Select ') + p.title,
+selShadow: isSel ? '0 0 0 3px #26211E' : '0 2px 0 #E6DED3',
+opacity: drag === i ? '0.45' : '1',
+shadow: drag === i ? '0 12px 28px rgba(38,33,30,.18)' : '0 2px 0 #E6DED3',
+onPressStart: () => {
+this.cancelPress();
+this.lp = setTimeout(() => {
+this.lp = null;
+this.justLP = true;
+this.setState({ selecting: true, selected: [p.id], drag: null });
+}, 500);
+},
+onPressEnd: () => this.cancelPress(),
+onContext: (e) => e.preventDefault(),
+onLinkClick: (e) => { if (this.justLP) { e.preventDefault(); this.justLP = false; } },
+toggle: (e) => {
+if (this.justLP) { this.justLP = false; return; }
+const cur = this.state.selected;
+this.setState({ selected: cur.indexOf(p.id) >= 0 ? cur.filter((x) => x !== p.id) : cur.concat([p.id]) });
+},
+onDragStart: (e) => { this.cancelPress(); if (e.dataTransfer) { e.dataTransfer.effectAllowed = 'move'; } this.setState({ drag: i }); },
+onDragOver: (e) => {
+e.preventDefault();
+const from = this.state.drag;
+if (from === null || from === i) return;
+const list = this.state.poses.slice();
+const moved = list.splice(from, 1)[0];
+list.splice(i, 0, moved);
+this.setState({ poses: list, drag: i });
+},
+onDrop: (e) => { e.preventDefault(); this.setState({ drag: null }); },
+onDragEnd: () => this.setState({ drag: null })
+};
+})
+};
+}
+}
+</script>
+</body>
+</html>

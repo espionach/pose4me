@@ -1,0 +1,127 @@
+@import "tailwindcss";
+
+/* Design tokens — see HANDOFF.md */
+@theme {
+  --color-paper: #fbf8f3;
+  --color-paper-deep: #f3ede4;
+  --color-desk: #ede7dd;
+  --color-surface: #ffffff;
+  --color-ink: #26211e;
+  --color-muted: #6b625b;
+  --color-placeholder: #8a8078;
+  --color-line: #e6ded3;
+  --color-line-soft: #f1eae0;
+  --color-dot-inactive: #d9d0c5;
+  --color-grip: #b9afa4;
+  --color-berry: #c8375e;
+  --color-pink: #f7c6cf;
+  --color-butter: #f8e7a6;
+  --color-matcha: #cfe3c4;
+  --color-sky: #cfe0f2;
+  --color-lilac: #e2d5f2;
+
+  --font-serif: var(--font-young-serif), Georgia, serif;
+  --font-sans: var(--font-figtree), "Helvetica Neue", sans-serif;
+  --font-hand: var(--font-caveat), cursive;
+
+  --radius-card: 22px;
+  --radius-photo: 14px;
+
+  --shadow-paper: 0 2px 0 #e6ded3;
+  --shadow-selected: 0 0 0 3px #26211e;
+  --shadow-float: 0 10px 24px rgba(38, 33, 30, 0.25);
+  --shadow-soft: 0 10px 24px rgba(38, 33, 30, 0.16);
+}
+
+:root {
+  /* Top padding matches the 52–56px in the mockups, but respects notches. */
+  --pad-top: max(52px, calc(env(safe-area-inset-top) + 12px));
+  --pad-bottom: max(32px, calc(env(safe-area-inset-bottom) + 16px));
+}
+
+html,
+body {
+  background: var(--color-desk);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  line-height: normal; /* mockups use the browser default, not Tailwind's 1.5 */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: default;
+}
+
+.paper {
+  background-color: var(--color-paper);
+  background-image: radial-gradient(rgba(38, 33, 30, 0.05) 1px, transparent 1px);
+  background-size: 14px 14px;
+}
+
+.lined {
+  background-color: #ffffff;
+  background-image: repeating-linear-gradient(transparent 0 27px, #f1eae0 27px 28px);
+  background-position: 0 10px;
+  background-attachment: local;
+}
+
+.section-label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.no-callout {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-placeholder);
+}
+
+/* Fixed bottom bars stay inside the centered app column. */
+.bottom-bar {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  bottom: 0;
+  z-index: 20;
+  pointer-events: none;
+}
+.bottom-bar > * {
+  pointer-events: auto;
+}
+
+/* Real text in content/*.md, rendered on the legal pages. */
+.legal-md {
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--color-ink);
+}
+.legal-md > * + * {
+  margin-top: 12px;
+}
+.legal-md h1,
+.legal-md h2,
+.legal-md h3 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  line-height: 1.2;
+}
+.legal-md h1 { font-size: 24px; }
+.legal-md h2 { font-size: 20px; margin-top: 20px; }
+.legal-md h3 { font-size: 17px; margin-top: 16px; }
+.legal-md ul { list-style: disc; padding-left: 20px; }
+.legal-md ol { list-style: decimal; padding-left: 20px; }
+.legal-md a { color: var(--color-berry); text-decoration: underline; }

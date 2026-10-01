@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Settings</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&amp;family=Figtree:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:Figtree,'Helvetica Neue',sans-serif;color:#26211E;background:#EDE7DD}
+a{color:#26211E;text-decoration:none}a:hover{color:#C8375E}
+.paper{background-color:#FBF8F3;background-image:radial-gradient(rgba(38,33,30,.05) 1px,transparent 1px);background-size:14px 14px}
+#display-name::placeholder{color:#8A8078}
+</style>
+</helmet>
+<div class="paper" style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; display: flex; flex-direction: column; padding: 52px 20px 0 20px; gap: 24px">
+
+<div style="display: flex; justify-content: space-between; align-items: center">
+<a href="Main.dc.html" aria-label="Back to my shoots" style="width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; border: 1.5px solid #E6DED3; display: flex; align-items: center; justify-content: center; box-sizing: border-box">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#26211E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+</a>
+</div>
+
+<h1 style="margin: 0; padding: 0 4px; font-family: 'Young Serif', Georgia, serif; font-weight: 400; font-size: 34px; line-height: 1.1">settings</h1>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div style="font-size: 13px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; color: #6B625B; padding: 0 4px">profile</div>
+<div style="background: #FFFFFF; border-radius: 22px; padding: 16px; box-shadow: 0 2px 0 #E6DED3; display: flex; flex-direction: column; gap: 8px">
+<label for="display-name" style="font-size: 14px; font-weight: 600">display name</label>
+<div style="display: flex; gap: 8px; align-items: center">
+<input id="display-name" placeholder="your name" value="{{name}}" onChange="{{onName}}" style="flex-grow: 1; min-width: 0; height: 48px; border: 1.5px solid #E6DED3; border-radius: 14px; background: #FBF8F3; padding: 0 14px; box-sizing: border-box; font: 600 16px Figtree, sans-serif; color: #26211E; outline: none">
+<button onClick="{{save}}" disabled="{{cantSave}}" style="height: 48px; padding: 0 18px; border-radius: 24px; border: none; background: {{saveBg}}; color: {{saveColor}}; font: 600 15px Figtree, sans-serif; cursor: pointer; flex-shrink: 0">{{saveLabel}}</button>
+</div>
+<div style="font-size: 13px; color: #6B625B">shown on your home screen as "hey {{shownName}}!"</div>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div style="font-size: 13px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; color: #6B625B; padding: 0 4px">about</div>
+<div style="background: #FFFFFF; border-radius: 22px; padding: 4px 16px; box-shadow: 0 2px 0 #E6DED3; display: flex; flex-direction: column">
+<a href="Privacy.dc.html" style="height: 56px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #F1EAE0; font-size: 16px; font-weight: 600">
+privacy policy
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B625B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+</a>
+<a href="Terms.dc.html" style="height: 56px; display: flex; align-items: center; justify-content: space-between; font-size: 16px; font-weight: 600">
+terms &amp; conditions
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B625B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+</a>
+</div>
+</div>
+
+<svg aria-hidden="true" style="position: absolute; right: 34px; top: 112px; transform: rotate(12deg); pointer-events: none" width="36" height="36" viewBox="0 0 40 40" fill="#CFE0F2" stroke="#26211E" stroke-width="1.8" stroke-linejoin="round"><path d="M20 3c1.2 9.5 7.5 15.8 17 17-9.5 1.2-15.8 7.5-17 17-1.2-9.5-7.5-15.8-17-17 9.5-1.2 15.8-7.5 17-17z"></path></svg>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { saved: 'priya', name: 'priya', justSaved: false };
+}
+renderVals() {
+const s = this.state;
+const trimmed = s.name.trim();
+const canSave = trimmed.length > 0 && trimmed !== s.saved;
+return {
+name: s.name,
+shownName: s.saved,
+onName: (e) => this.setState({ name: e.target.value, justSaved: false }),
+save: () => { if (canSave) this.setState({ saved: trimmed, name: trimmed, justSaved: true }); },
+cantSave: !canSave,
+saveBg: canSave ? '#26211E' : '#F1EAE0',
+saveColor: canSave ? '#FFFFFF' : '#6B625B',
+saveLabel: s.justSaved ? 'saved' : 'save'
+};
+}
+}
+</script>
+</body>
+</html>

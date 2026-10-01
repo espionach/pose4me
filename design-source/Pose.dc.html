@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pose details</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&amp;family=Figtree:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:Figtree,'Helvetica Neue',sans-serif;color:#26211E;background:#EDE7DD}
+a{color:#26211E;text-decoration:none}a:hover{color:#C8375E}
+.paper{background-color:#FBF8F3;background-image:radial-gradient(rgba(38,33,30,.05) 1px,transparent 1px);background-size:14px 14px}
+.lined{background-color:#FFFFFF;background-image:repeating-linear-gradient(transparent 0 27px,#F1EAE0 27px 28px);background-position:0 10px}
+.caption::placeholder,#pose-who::placeholder{color:#8A8078}
+textarea::placeholder{color:#8A8078}
+</style>
+</helmet>
+<div class="paper" style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; display: flex; flex-direction: column; padding: 52px 20px 0 20px; gap: 18px">
+
+<div style="display: flex; justify-content: space-between; align-items: center">
+<a href="Import.dc.html" aria-label="Back to camera roll" style="width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; border: 1.5px solid #E6DED3; display: flex; align-items: center; justify-content: center; box-sizing: border-box">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#26211E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+</a>
+<div style="font-family: Figtree, 'Helvetica Neue', sans-serif; font-size: 22px; font-weight: 700">{{counter}}</div>
+<div style="width: 44px; height: 44px"></div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 10px">
+<div style="position: relative; height: 262px; display: flex; justify-content: center">
+<div style="position: relative; width: 206px; height: 252px; background: #FFFFFF; padding: 8px 8px 30px 8px; box-sizing: border-box; box-shadow: 0 10px 24px rgba(38,33,30,.16); transform: {{tilt}}">
+<div style="width: 100%; height: 100%; background: {{bg}}; display: flex; align-items: flex-end; justify-content: center">
+<sc-if value="{{isSit}}" hint-placeholder-val="{{ true }}"><svg width="120" height="168" viewBox="0 0 100 140" fill="none" stroke="#26211E" stroke-opacity=".55" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="44" cy="40" r="11"></circle><path d="M46 51L52 92L80 94L84 122M52 92L30 100M48 60L66 76M48 60L32 84"></path></svg></sc-if>
+<sc-if value="{{isStand}}" hint-placeholder-val="{{ false }}"><svg width="120" height="168" viewBox="0 0 100 140" fill="none" stroke="#26211E" stroke-opacity=".55" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="50" cy="28" r="11"></circle><path d="M50 39L50 84M50 50L34 66L44 76M50 50L66 64L72 44M50 84L40 124M50 84L60 124"></path></svg></sc-if>
+<sc-if value="{{isJump}}" hint-placeholder-val="{{ false }}"><svg width="120" height="168" viewBox="0 0 100 140" fill="none" stroke="#26211E" stroke-opacity=".55" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="50" cy="30" r="11"></circle><path d="M50 41L50 86M50 52L30 26M50 52L70 26M50 86L36 118M50 86L66 110L58 126"></path></svg></sc-if>
+</div>
+<div style="position: absolute; left: 70px; top: -10px; width: 66px; height: 20px; background: rgba(247,198,207,.95); transform: rotate(3deg)"></div>
+<sc-if value="{{renaming}}" hint-placeholder-val="{{ false }}">
+<input class="caption" aria-label="Pose title" placeholder="name this pose" value="{{name}}" onChange="{{onName}}" onBlur="{{endRename}}" onKeyDown="{{renameKey}}" autoFocus="{{ true }}" style="position: absolute; left: 6px; right: 6px; bottom: 2px; height: 26px; border: none; border-bottom: 2px dashed #C8375E; background: transparent; padding: 0 4px; font-family: Figtree, 'Helvetica Neue', sans-serif; font-size: 18px; font-weight: 700; color: #26211E; outline: none; box-sizing: border-box">
+</sc-if>
+<sc-if value="{{notRenaming}}" hint-placeholder-val="{{ true }}">
+<div style="position: absolute; left: 12px; right: 12px; bottom: 4px; height: 22px; font-family: Figtree, 'Helvetica Neue', sans-serif; font-size: 18px; font-weight: 700; line-height: 22px; color: {{captionColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{captionText}}</div>
+</sc-if>
+<button aria-label="Edit pose" aria-expanded="{{menuOpen}}" onClick="{{toggleMenu}}" style="position: absolute; right: -16px; top: -16px; width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; border: 1.5px solid #E6DED3; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(38,33,30,.14); cursor: pointer; z-index: 3">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#26211E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z"></path><path d="M13.5 6.5l4 4"></path></svg>
+</button>
+<sc-if value="{{menuOpen}}" hint-placeholder-val="{{ false }}">
+<div role="menu" style="position: absolute; right: -16px; top: 34px; width: 172px; background: #FFFFFF; border-radius: 16px; box-shadow: 0 12px 28px rgba(38,33,30,.18); padding: 6px; display: flex; flex-direction: column; z-index: 4">
+<button role="menuitem" onClick="{{startRename}}" style="height: 44px; border: none; background: transparent; border-radius: 12px; padding: 0 10px; display: flex; align-items: center; gap: 10px; font: 600 15px Figtree, sans-serif; color: #26211E; text-align: left; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#26211E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7v13M15 7v13"></path></svg>edit title</button>
+<a role="menuitem" href="Import.dc.html" style="height: 44px; border-radius: 12px; padding: 0 10px; display: flex; align-items: center; gap: 10px; font: 600 15px Figtree, sans-serif; color: #26211E"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#26211E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="3"></rect><circle cx="12" cy="12.5" r="3.5"></circle><path d="M8 5l1.5-2h5L16 5"></path></svg>change photo</a>
+</div>
+</sc-if>
+</div>
+<svg style="position: absolute; left: 52px; top: 172px; pointer-events: none" width="48" height="48" viewBox="0 0 24 24" fill="#F8E7A6" stroke="#26211E" stroke-width="1.1" stroke-linejoin="round"><path d="M12 2.5l2.8 6 6.5.7-4.9 4.4 1.4 6.4L12 16.8 6.2 20l1.4-6.4L2.7 9.2l6.5-.7z"></path></svg>
+<svg style="position: absolute; left: 36px; top: 14px; pointer-events: none" width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#C8375E" stroke-width="2.4" stroke-linecap="round"><path d="M20 4v8M20 28v8M4 20h8M28 20h8M9 9l5 5M26 26l5 5M31 9l-5 5M14 26l-5 5"></path></svg>
+<button aria-label="Previous photo" disabled="{{atStart}}" onClick="{{prev}}" style="position: absolute; left: 0; top: 105px; width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; border: 1.5px solid #E6DED3; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(38,33,30,.10); opacity: {{prevOpacity}}; cursor: pointer">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#26211E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+</button>
+<button aria-label="Next photo" disabled="{{atEnd}}" onClick="{{next}}" style="position: absolute; right: 0; top: 105px; width: 44px; height: 44px; border-radius: 22px; background: #26211E; border: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(38,33,30,.18); opacity: {{nextOpacity}}; cursor: pointer">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+</button>
+</div>
+<div style="display: flex; justify-content: center; gap: 2px">
+<sc-for list="{{dots}}" as="dot" hint-placeholder-count="4">
+<button aria-label="{{dot.label}}" onClick="{{dot.go}}" style="width: 22px; height: 16px; border: none; background: transparent; padding: 0; display: flex; align-items: center; justify-content: center; cursor: pointer"><span style="display: block; width: {{dot.w}}; height: 8px; border-radius: 4px; background: {{dot.color}}"></span></button>
+</sc-for>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<label for="pose-who" style="font-size: 13px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; color: #6B625B">who's posing</label>
+<input id="pose-who" placeholder="e.g. me, Maya" value="{{who}}" onChange="{{onWho}}" style="height: 52px; border: none; border-radius: 18px; background: #FFFFFF; padding: 0 16px; box-sizing: border-box; font-family: Figtree, 'Helvetica Neue', sans-serif; font-size: 16px; font-weight: 600; color: #26211E; box-shadow: 0 2px 0 #E6DED3; outline: none">
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div style="font-size: 13px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; color: #6B625B">time limit</div>
+<div style="display: flex; align-items: center; justify-content: space-between; background: #FFFFFF; border-radius: 22px; padding: 6px; box-shadow: 0 2px 0 #E6DED3">
+<button aria-label="Less time" onClick="{{less}}" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #FBF8F3; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#26211E" stroke-width="2.6" stroke-linecap="round"><path d="M5 12h14"></path></svg></button>
+<div style="display: flex; align-items: baseline; gap: 6px"><span style="font-family: Figtree, 'Helvetica Neue', sans-serif; font-size: 30px">{{mins}}</span><span style="font-size: 15px; font-weight: 600; color: #6B625B">min</span></div>
+<button aria-label="More time" onClick="{{more}}" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #26211E; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></button>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; justify-content: space-between; align-items: center">
+<label for="pose-notes" style="font-size: 13px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; color: #6B625B">notes</label>
+</div>
+<textarea id="pose-notes" class="lined" placeholder="angles, lens, pose tips…" value="{{note}}" onChange="{{onNote}}" style="height: 96px; border: none; border-radius: 18px; padding: 10px 16px; box-sizing: border-box; font-family: Figtree, 'Helvetica Neue', sans-serif; font-size: 19px; line-height: 28px; color: #26211E; resize: none; box-shadow: 0 2px 0 #E6DED3"></textarea>
+</div>
+
+<a href="Plan.dc.html" style="position: absolute; left: 20px; right: 20px; bottom: 32px; height: 56px; border-radius: 28px; background: #26211E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600">{{saveLabel}}</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = {
+idx: 0,
+menuOpen: false,
+renaming: false,
+photos: [
+{ bg: '#F8E7A6', fig: 'sit', name: 'blanket moment', who: 'Maya', mins: 4, note: 'shoot low, 0.5x lens, get the sun behind her. chin down a little!' },
+{ bg: '#F7C6CF', fig: 'stand', name: 'hand on hip', who: 'me', mins: 3, note: '' },
+{ bg: '#CFE0F2', fig: 'jump', name: 'jump shot', who: 'Maya, Zoe', mins: 5, note: '' },
+{ bg: '#E2D5F2', fig: 'stand', name: '', who: '', mins: 3, note: '' }
+]
+};
+}
+upd(fn) {
+const idx = this.state.idx;
+const photos = this.state.photos.map((p, i) => (i === idx ? fn(Object.assign({}, p)) : p));
+this.setState({ photos: photos });
+}
+renderVals() {
+const idx = this.state.idx;
+const photos = this.state.photos;
+const p = photos[idx];
+const last = photos.length - 1;
+return {
+counter: 'photo ' + (idx + 1) + ' of ' + photos.length,
+bg: p.bg,
+tilt: idx % 2 ? 'rotate(2deg)' : 'rotate(-2.5deg)',
+isSit: p.fig === 'sit',
+isStand: p.fig === 'stand',
+isJump: p.fig === 'jump',
+name: p.name,
+captionText: p.name || 'untitled pose',
+captionColor: p.name ? '#26211E' : '#8A8078',
+menuOpen: this.state.menuOpen,
+renaming: this.state.renaming,
+notRenaming: !this.state.renaming,
+toggleMenu: () => this.setState({ menuOpen: !this.state.menuOpen, renaming: false }),
+startRename: () => this.setState({ menuOpen: false, renaming: true }),
+endRename: () => this.setState({ renaming: false }),
+renameKey: (e) => { if (e.key === 'Enter' || e.key === 'Escape') { this.setState({ renaming: false }); } },
+onName: (e) => { const v = e.target.value; this.upd((x) => { x.name = v; return x; }); },
+note: p.note,
+onNote: (e) => { const v = e.target.value; this.upd((x) => { x.note = v; return x; }); },
+mins: p.mins,
+less: () => this.upd((x) => { x.mins = Math.max(1, x.mins - 1); return x; }),
+more: () => this.upd((x) => { x.mins = x.mins + 1; return x; }),
+who: p.who,
+onWho: (e) => { const v = e.target.value; this.upd((x) => { x.who = v; return x; }); },
+atStart: idx === 0,
+atEnd: idx === last,
+prevOpacity: idx === 0 ? '0.35' : '1',
+nextOpacity: idx === last ? '0.35' : '1',
+prev: () => this.setState({ idx: Math.max(0, idx - 1), menuOpen: false, renaming: false }),
+next: () => this.setState({ idx: Math.min(last, idx + 1), menuOpen: false, renaming: false }),
+dots: photos.map((_, i) => ({
+label: 'Go to photo ' + (i + 1),
+w: i === idx ? '20px' : '8px',
+color: i === idx ? '#26211E' : '#D9D0C5',
+go: () => this.setState({ idx: i, menuOpen: false, renaming: false })
+})),
+saveLabel: 'save ' + photos.length + ' poses'
+};
+}
+}
+</script>
+</body>
+</html>

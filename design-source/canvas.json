@@ -1,0 +1,86 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "Export.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 40,
+      "title": "5 \u00b7 Export PDF",
+      "w": 390,
+      "x": 1880,
+      "y": 0
+    },
+    "Import.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 40,
+      "title": "3 \u00b7 Camera roll",
+      "w": 390,
+      "x": 940,
+      "y": 0
+    },
+    "Main.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 40,
+      "title": "1 \u00b7 My shoots",
+      "w": 390,
+      "x": 0,
+      "y": 0
+    },
+    "Plan.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 40,
+      "title": "2 \u00b7 Shoot plan",
+      "w": 390,
+      "x": 470,
+      "y": 0
+    },
+    "Pose.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 40,
+      "title": "4 \u00b7 Pose details",
+      "w": 390,
+      "x": 1410,
+      "y": 0
+    },
+    "Scribbles.dc.html": {
+      "x": 2350,
+      "y": 0,
+      "w": 480,
+      "h": 1000,
+      "title": "Scribble sheet"
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-09-24T03:41:40Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "title": {
+      "kind": "title1",
+      "maxW": 2270,
+      "text": "Shoot Planner \u2014 mobile MVP",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Plan.dc.html",
+    "Import.dc.html",
+    "Pose.dc.html",
+    "Export.dc.html",
+    "Scribbles.dc.html"
+  ],
+  "pages": [],
+  "title": "Shoot Planner"
+}

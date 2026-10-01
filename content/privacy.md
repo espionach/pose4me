@@ -1,0 +1,5 @@
+---
+updated: [DATE]
+---
+
+[PRIVACY POLICY TEXT GOES HERE]

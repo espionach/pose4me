@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Welcome</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&amp;family=Figtree:wght@400;500;600;700&amp;family=Caveat:wght@700&amp;display=swap">
+<style>
+body{margin:0;font-family:Figtree,'Helvetica Neue',sans-serif;color:#26211E;background:#EDE7DD}
+a{color:#26211E;text-decoration:none}a:hover{color:#C8375E}
+.paper{background-color:#FBF8F3;background-image:radial-gradient(rgba(38,33,30,.05) 1px,transparent 1px);background-size:14px 14px}
+#welcome-name::placeholder{color:#8A8078}
+</style>
+</helmet>
+<div class="paper" style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; padding: 0 24px 120px 24px; gap: 28px">
+
+<svg aria-hidden="true" style="position: absolute; left: 36px; top: 96px; transform: rotate(-12deg); pointer-events: none" width="52" height="52" viewBox="0 0 40 40" fill="#F8E7A6" stroke="#26211E" stroke-width="1.8" stroke-linejoin="round"><path d="M20 4l4.7 10 11 1.2-8.2 7.4 2.3 10.8L20 28l-9.8 5.4 2.3-10.8-8.2-7.4 11-1.2z"></path></svg>
+<svg aria-hidden="true" style="position: absolute; right: 40px; top: 140px; transform: rotate(16deg); pointer-events: none" width="48" height="48" viewBox="0 0 40 40" stroke="#26211E" stroke-width="1.6"><circle cx="20" cy="10" r="6.5" fill="#F7C6CF"></circle><circle cx="29.5" cy="17" r="6.5" fill="#F7C6CF"></circle><circle cx="26" cy="28" r="6.5" fill="#F7C6CF"></circle><circle cx="14" cy="28" r="6.5" fill="#F7C6CF"></circle><circle cx="10.5" cy="17" r="6.5" fill="#F7C6CF"></circle><circle cx="20" cy="20" r="5" fill="#F8E7A6"></circle></svg>
+<svg aria-hidden="true" style="position: absolute; right: 70px; top: 236px; transform: rotate(-6deg); pointer-events: none" width="44" height="22" viewBox="0 0 44 22" fill="none" stroke="#C8375E" stroke-width="2.8" stroke-linecap="round"><path d="M3 14c4-9 7 7 11 0s7 7 11 0 7 7 11 0 5 5 5 1"></path></svg>
+
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div style="font-family: Caveat, cursive; font-size: 30px; font-weight: 700; color: #C8375E; transform: rotate(-3deg); transform-origin: left">hi there!</div>
+<h1 style="margin: 0; font-family: 'Young Serif', Georgia, serif; font-weight: 400; font-size: 36px; line-height: 1.1; letter-spacing: -0.5px">what should we call you?</h1>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<label for="welcome-name" style="font-size: 13px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; color: #6B625B">your name</label>
+<input id="welcome-name" value="{{name}}" onChange="{{onName}}" style="height: 60px; border: 1.5px solid {{nameBorder}}; border-radius: 18px; background: #FFFFFF; padding: 0 16px; box-sizing: border-box; font-family: 'Young Serif', Georgia, serif; font-size: 22px; color: #26211E; outline: none; box-shadow: 0 2px 0 #E6DED3">
+<div style="font-size: 13px; color: #6B625B; padding: 0 4px">you can change this anytime in settings.</div>
+</div>
+
+<sc-if value="{{ready}}" hint-placeholder-val="{{ true }}">
+<a href="Main.dc.html" style="position: absolute; z-index: 5; left: 24px; right: 24px; bottom: 34px; height: 58px; border-radius: 29px; background: #26211E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 16px; font-weight: 600; box-shadow: 0 10px 24px rgba(38,33,30,.22)">
+let's go
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+</a>
+</sc-if>
+<sc-if value="{{notReady}}" hint-placeholder-val="{{ false }}">
+<button disabled style="position: absolute; z-index: 5; left: 24px; right: 24px; bottom: 34px; height: 58px; border-radius: 29px; background: #E6DED3; color: #6B625B; border: none; font: 600 16px Figtree, sans-serif">enter your name to start</button>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { name: '' };
+}
+renderVals() {
+const ready = this.state.name.trim().length > 0;
+return {
+name: this.state.name,
+onName: (e) => this.setState({ name: e.target.value }),
+nameBorder: ready ? '#26211E' : '#E6DED3',
+ready: ready,
+notReady: !ready
+};
+}
+}
+</script>
+</body>
+</html>
