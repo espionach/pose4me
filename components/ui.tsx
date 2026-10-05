@@ -89,6 +89,44 @@ export const primaryBtn =
 export const secondaryBtn =
   "flex h-14 grow basis-0 items-center justify-center gap-2 rounded-full border-[1.5px] border-ink bg-surface text-[16px] font-semibold text-ink";
 
+/** A bottom-sheet confirmation, e.g. "discard these poses?" (discard / keep editing). */
+export function ConfirmSheet({
+  title,
+  confirmLabel,
+  cancelLabel,
+  onConfirm,
+  onCancel,
+}: {
+  title: string;
+  confirmLabel: string;
+  cancelLabel: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-40 flex items-end justify-center bg-[rgba(38,33,30,.32)]" onClick={onCancel}>
+      <div
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="confirm-title"
+        className="flex w-full max-w-[430px] flex-col gap-3 rounded-t-[28px] bg-paper px-5 pt-6"
+        style={{ paddingBottom: "var(--pad-bottom)" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 id="confirm-title" className="m-0 px-1 text-center font-serif text-[24px] font-normal">
+          {title}
+        </h2>
+        <button type="button" autoFocus onClick={onConfirm} className="h-14 rounded-full bg-berry text-[16px] font-semibold text-white">
+          {confirmLabel}
+        </button>
+        <button type="button" onClick={onCancel} className="h-14 rounded-full border-[1.5px] border-ink bg-surface text-[16px] font-semibold text-ink">
+          {cancelLabel}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /** "N selected · cancel · delete" row that replaces the header while selecting. */
 export function SelectBar({
   count,

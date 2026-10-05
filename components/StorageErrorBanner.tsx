@@ -2,13 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { onStorageError } from "@/lib/db";
+import { onNotice } from "@/lib/notice";
 import { CloseIcon } from "./icons";
 
-/** Shows a friendly message whenever a save fails (e.g. device storage is full). */
+/** Shows a friendly message whenever a save fails (e.g. device storage is full), or for other app notices. */
 export function StorageErrorBanner() {
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => onStorageError((e) => setMessage(e.message)), []);
+  useEffect(() => onNotice(setMessage), []);
   useEffect(() => {
     if (!message) return;
     const t = setTimeout(() => setMessage(null), 8000);

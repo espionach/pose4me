@@ -37,7 +37,7 @@ export type Profile = { displayName: string };
 
 // --- in-memory only (never written until "save N poses") ------------------------------
 
-/** A photo picked in the camera roll this session. `url` is an object URL for `blob`. */
+/** A photo just picked (not saved yet). `url` is an object URL for `blob`. */
 export type PickedPhoto = { key: string; blob: Blob; url: string };
 
 /** A photo on a pose being edited: either already saved, or picked and not yet saved. */
@@ -49,12 +49,12 @@ export type EditorPose = { id: string; photo: PhotoRef; title: string; who: stri
 /** Working set for Pose details. */
 export type Editor = {
   shootId: string;
-  /** "new" = poses picked from the camera roll; "existing" = editing a shoot's saved poses. */
+  /** "new" = photos just picked; "existing" = editing a shoot's saved poses. */
   source: "new" | "existing";
   poses: EditorPose[];
-  /** For "new": the camera-roll photo each pose came from, so going back restores the selection. */
-  keys?: string[];
   index: number;
+  /** Anything changed since the poses were picked (back then asks before discarding). */
+  edited: boolean;
 };
 
 /** A shoot being created from New shoot. Only saved on "save N poses". */

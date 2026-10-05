@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/LegalPage";
 
-export const metadata: Metadata = { title: "Terms & conditions · Shoot Planner" };
+export const metadata: Metadata = { title: "Terms & conditions · poseforme" };
 
 // Text lives in content/terms.md.
 export default function Terms() {

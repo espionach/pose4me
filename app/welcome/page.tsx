@@ -27,14 +27,14 @@ export default function Welcome() {
   };
 
   return (
-    <main className="paper relative flex min-h-dvh flex-col justify-center gap-7" style={{ padding: "0 24px 120px" }}>
+    <main className="paper relative flex min-h-dvh flex-col justify-center gap-7" style={{ padding: "max(24px, env(safe-area-inset-top)) 24px 120px" }}>
       <Sticker name="01-star" size={[52, 52]} style={{ left: 36, top: 96, transform: "rotate(-12deg)" }} />
       <Sticker name="05-flower" size={[48, 48]} style={{ right: 40, top: 140, transform: "rotate(16deg)" }} />
       <Sticker name="04-squiggle-line" size={[44, 22]} style={{ right: 70, top: 236, transform: "rotate(-6deg)" }} />
 
       <div className="flex flex-col gap-1.5">
         <div className="origin-left -rotate-3 font-hand text-[30px] font-bold text-berry">hi there!</div>
-        <h1 className="m-0 font-serif text-[36px] leading-[1.1] font-normal tracking-[-0.5px]">what should we call you?</h1>
+        <h1 className="m-0 max-w-[342px] font-serif text-[36px] leading-[1.1] font-normal tracking-[-0.5px]">what should we call you?</h1>
       </div>
 
       <div className="flex flex-col gap-2">

@@ -125,3 +125,38 @@ textarea::placeholder {
 .legal-md ul { list-style: disc; padding-left: 20px; }
 .legal-md ol { list-style: decimal; padding-left: 20px; }
 .legal-md a { color: var(--color-berry); text-decoration: underline; }
+
+/* No rubber-band / pull-to-refresh bounce on the page itself. */
+html,
+body {
+  overscroll-behavior: none;
+}
+
+/* iOS app (Capacitor): no text selection or long-press callouts outside text fields. */
+.native body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+.native input,
+.native textarea {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
+
+/* iOS WebKit gives native date/time inputs an intrinsic min width that ignores width: 100%. */
+input[type="date"],
+input[type="time"] {
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 0;
+  /* without the native appearance the value sits at the top; centre it */
+  display: flex;
+  align-items: center;
+}
+input[type="date"]::-webkit-date-and-time-value,
+input[type="time"]::-webkit-date-and-time-value {
+  text-align: left;
+  margin: 0;
+}

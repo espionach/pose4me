@@ -1,10 +1,10 @@
 import { deflateSync } from "node:zlib";
-import { expect, type Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 /*
  * Test helpers. Every test starts with an empty IndexedDB (fresh browser context).
  * Tests that need data create it through the app's dev seed (NEXT_PUBLIC_DEV_SEED=1 in
- * the test build) or through the real UI; camera-roll photos go through the file input.
+ * the test build) or through the real UI; photos are picked through the file chooser.
  */
 
 // --- tiny solid-colour PNGs, so every test photo is a real, distinct image ------------------
@@ -44,7 +44,7 @@ export function solidPng([r, g, b]: [number, number, number]): Buffer {
   ]);
 }
 
-/** Photo files for the camera roll's "from device" input. */
+/** Photo files to pick through the file chooser (the web stand-in for the native picker). */
 export const photoFiles = (count: number, offset = 0) =>
   Array.from({ length: count }, (_, i) => {
     const n = i + offset;
@@ -74,18 +74,26 @@ export async function stats(page: Page): Promise<Stats> {
   return page.evaluate(() => (window as unknown as { shootPlanner: DevApi }).shootPlanner.stats());
 }
 
-// --- camera roll ---------------------------------------------------------------------------
+// --- photo picker ------------------------------------------------------------------------
 
 /**
- * Makes sure the camera roll has 12 photos to pick from, with none selected. Photos added
- * with "from device" come in selected, so they're deselected here.
+ * Picks photos the way a person would: `open` taps whatever opens the picker (in the web
+ * build that's the file chooser), then the given files are chosen, in order.
  */
-export async function fillRoll(page: Page) {
-  const tiles = page.locator("button[aria-label^='Photo ']");
-  await expect(page.getByText("from device")).toBeVisible();
-  if ((await tiles.count()) > 0) return;
-  await page.locator("input[type=file]").setInputFiles(photoFiles(12));
-  await expect(tiles).toHaveCount(12);
-  const selected = page.locator("button[aria-pressed=true][aria-label^='Photo ']");
-  while ((await selected.count()) > 0) await selected.first().click();
+export async function pickFiles(page: Page, open: () => Promise<unknown>, files: ReturnType<typeof photoFiles>) {
+  const [chooser] = await Promise.all([page.waitForEvent("filechooser"), open()]);
+  await chooser.setFiles(files);
 }
+
+/** Opens the picker and cancels it. */
+export async function cancelPicker(page: Page, open: () => Promise<unknown>) {
+  await Promise.all([page.waitForEvent("filechooser"), open()]);
+  await page.getByTestId("photo-input").dispatchEvent("cancel");
+}
+
+/** URLs of a shoot's screens (the id is a query parameter). */
+export const routes = {
+  plan: (id: string) => `/shoot?id=${id}`,
+  pose: (id: string) => `/shoot/pose?id=${id}`,
+  export: (id: string) => `/shoot/export?id=${id}`,
+};

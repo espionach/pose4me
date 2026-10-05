@@ -1,12 +1,12 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ArrowRightIcon, CloseIcon } from "@/components/icons";
 import { Sticker } from "@/components/Scribble";
 import { BottomBar, IconButton, Screen } from "@/components/ui";
 import { useNav } from "@/lib/nav";
 import { DRAFT_ID, useStore } from "@/lib/store";
+import { usePickPoses } from "@/lib/usePickPoses";
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -21,18 +21,18 @@ function defaultWhen() {
 const field = "box-border h-[52px] w-full min-w-0 rounded-[18px] border-[1.5px] border-line bg-surface px-3.5 text-[15px] font-semibold text-ink outline-none";
 
 export default function NewShoot() {
-  const router = useRouter();
   const nav = useNav();
   const { state, startDraft, discardInProgress } = useStore();
-  // Coming back from the camera roll keeps what was typed; otherwise start fresh.
+  const { pick, busy } = usePickPoses();
+  // Coming back from Pose details keeps what was typed; otherwise start fresh.
   const [form, setForm] = useState(() => state.draft ?? { title: "", ...defaultWhen() });
   const name = form.title.trim();
   const ready = name.length > 0;
 
+  // Opens the photo picker; cancelling it leaves this screen (and what's typed) as it was.
   const next = () => {
     if (!ready) return;
-    startDraft({ ...form, title: name });
-    router.push(`/shoot/${DRAFT_ID}/import`);
+    pick(DRAFT_ID, () => startDraft({ ...form, title: name }));
   };
 
   return (
@@ -102,6 +102,7 @@ export default function NewShoot() {
           <button
             type="button"
             onClick={next}
+            disabled={busy}
             className="flex h-[58px] grow items-center justify-center gap-2.5 rounded-full bg-ink text-[16px] font-semibold text-white shadow-[0_10px_24px_rgba(38,33,30,.22)]"
           >
             next · pick photos

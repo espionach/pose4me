@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { photoFiles, seed, stats } from "./fixtures";
+import { photoFiles, pickFiles, routes, seed, stats } from "./fixtures";
 
 /*
  * Data persists on the device (IndexedDB) across reloads, images included, and deleting
@@ -7,7 +7,7 @@ import { photoFiles, seed, stats } from "./fixtures";
  */
 
 const ORIGIN = "http://localhost:3100";
-const url = (path: string) => new RegExp(`^${ORIGIN}${path}$`);
+const url = (path: string) => new RegExp(`^${ORIGIN}${path.replace(/[?]/g, "\\?")}$`);
 
 const poseCards = (page: Page) => page.locator("[role=button][aria-label^='Pose ']");
 const poseTitles = (page: Page) => poseCards(page).evaluateAll((els) => els.map((e) => e.getAttribute("aria-label")!.replace(/^Pose \d+: /, "")));
@@ -61,11 +61,8 @@ test("a shoot created with photos survives a reload: details, poses, order and i
   await page.locator("#shoot-name").fill("persist test");
   await page.locator("#shoot-date").fill("2026-12-05");
   await page.locator("#shoot-time").fill("16:45");
-  await page.getByRole("button", { name: "next · pick photos" }).click();
-
-  // Photos added "from device" come in selected, in the order picked.
-  await page.locator("input[type=file]").setInputFiles(photoFiles(3));
-  await page.getByRole("button", { name: "next · 3 selected" }).click();
+  // Photos open in Pose details in the order picked.
+  await pickFiles(page, () => page.getByRole("button", { name: "next · pick photos" }).click(), photoFiles(3));
   for (const [name, who] of [["one", "Maya"], ["two", "me"], ["three", "Zoe"]]) {
     await page.locator("#pose-name").fill(name);
     await page.locator("#pose-who").fill(who);
@@ -104,7 +101,7 @@ test("a shoot created with photos survives a reload: details, poses, order and i
 
 test("images keep their pose after reordering and reloading", async ({ page }) => {
   const shootId = await seed(page);
-  await page.goto(`/shoot/${shootId}`);
+  await page.goto(routes.plan(shootId!));
   const idsBefore = await page.locator("main [data-photo]").evaluateAll((els) => els.map((e) => e.getAttribute("data-photo")));
   await drag(page, 3, -2); // "jumping together" to the top
   await expect.poll(() => poseTitles(page)).toEqual([
@@ -125,7 +122,7 @@ test("images keep their pose after reordering and reloading", async ({ page }) =
 
 test("deleting poses deletes their images", async ({ page }) => {
   const shootId = await seed(page);
-  await page.goto(`/shoot/${shootId}`);
+  await page.goto(routes.plan(shootId!));
   const first = poseCards(page).first();
   const box = (await first.boundingBox())!;
   await page.mouse.move(box.x + 150, box.y + 60);
@@ -165,18 +162,16 @@ test("deleting a shoot deletes its poses and images", async ({ page }) => {
 
 test("replacing a saved pose's photo stores the new image and deletes the old one", async ({ page }) => {
   const shootId = await seed(page);
-  await page.goto(`/shoot/${shootId}`);
+  await page.goto(routes.plan(shootId!));
   await poseCards(page).nth(1).click();
   const before = await page.locator("main [data-photo]").first().getAttribute("data-photo");
-  await page.getByLabel("Change photo").click();
-  await page.locator("input[type=file]").setInputFiles(photoFiles(1, 5));
-  await page.getByRole("button", { name: "use photo" }).click();
-  await expect(page).toHaveURL(url(`/shoot/${shootId}/pose`));
+  await pickFiles(page, () => page.getByLabel("Change photo").click(), photoFiles(1, 5));
+  await expect(page).toHaveURL(url(routes.pose(shootId!)));
+  await expect.poll(() => page.locator("main [data-photo]").first().getAttribute("data-photo")).not.toBe(before);
   const after = await page.locator("main [data-photo]").first().getAttribute("data-photo");
-  expect(after).not.toBe(before);
   expect(await stats(page)).toEqual({ profile: 1, photoshoots: 1, poses: 8, images: 8 });
   await page.reload(); // falls back to the plan; the new photo is saved
-  await expect(page).toHaveURL(url(`/shoot/${shootId}`));
+  await expect(page).toHaveURL(url(routes.plan(shootId!)));
   expect(await page.locator("main [data-photo]").nth(1).getAttribute("data-photo")).toBe(after);
 });
 
@@ -185,12 +180,10 @@ test("an abandoned new-shoot draft writes nothing", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "new shoot" }).click();
   await page.locator("#shoot-name").fill("never saved");
-  await page.getByRole("button", { name: "next · pick photos" }).click();
-  await page.locator("input[type=file]").setInputFiles(photoFiles(2));
-  await page.getByRole("button", { name: "next · 2 selected" }).click();
+  await pickFiles(page, () => page.getByRole("button", { name: "next · pick photos" }).click(), photoFiles(2));
   await page.locator("#pose-name").fill("draft pose");
-  await page.getByLabel("Back to camera roll").click();
-  await page.getByLabel("Close").click();
+  await page.getByLabel("Back to new shoot").click();
+  await page.getByRole("button", { name: "discard" }).click();
   await page.getByLabel("Cancel new shoot").click();
   await expect(page).toHaveURL(url("/"));
   expect(await stats(page)).toEqual({ profile: 1, photoshoots: 0, poses: 0, images: 0 });

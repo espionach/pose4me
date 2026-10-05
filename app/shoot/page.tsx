@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { BackIcon, CalendarIcon, CheckIcon, ClockIcon, DownloadIcon, GripIcon, PencilIcon, PhotoIcon, PlusIcon, TimerIcon } from "@/components/icons";
 import { Photo } from "@/components/Photo";
 import { Scribble, useScribbles, type Sides } from "@/components/Scribble";
@@ -11,7 +11,9 @@ import { fmtWhen, plural, poseNum, splitWho, totalMinutes, whoColors } from "@/l
 import { usePoses, useShoot } from "@/lib/data";
 import { deletePoses, reorderPoses, updateShoot } from "@/lib/db";
 import { useNav } from "@/lib/nav";
+import { exportUrl, poseUrl, useShootId } from "@/lib/routes";
 import { DRAFT_ID, toEditorPose, useStore } from "@/lib/store";
+import { usePickPoses } from "@/lib/usePickPoses";
 import type { Pose } from "@/lib/types";
 import { useLongPress } from "@/lib/useLongPress";
 import { MissingShoot } from "./MissingShoot";
@@ -27,14 +29,23 @@ const GAP = 14;
 const label = "flex flex-col gap-1 text-[12px] font-bold uppercase tracking-[0.6px] text-muted";
 const field = "box-border h-11 w-full rounded-[14px] border-[1.5px] border-line bg-surface px-2.5 text-[14px] font-semibold normal-case tracking-normal text-ink";
 
-export default function ShootPlan() {
-  const { id } = useParams<{ id: string }>();
+export default function Page() {
+  return (
+    <Suspense>
+      <ShootPlan />
+    </Suspense>
+  );
+}
+
+function ShootPlan() {
+  const id = useShootId();
   const router = useRouter();
   const nav = useNav();
-  const isDraft = id === DRAFT_ID; // the draft has no plan until it is saved
+  const isDraft = !id || id === DRAFT_ID; // the draft has no plan until it is saved
   const shoot = useShoot(isDraft ? null : id);
   const saved = usePoses(isDraft ? null : id);
   const { startEditor, clearEditor } = useStore();
+  const { pick, busy } = usePickPoses();
 
   const [editing, setEditing] = useState(false);
   const [draftTitle, setDraftTitle] = useState("");
@@ -61,7 +72,7 @@ export default function ShootPlan() {
   });
 
   if (!isDraft && (shoot === undefined || saved === undefined)) return <div className="paper min-h-dvh" />;
-  if (!shoot || !saved) return <MissingShoot to={isDraft ? "/new" : "/"} />;
+  if (!shoot || !saved) return <MissingShoot to={id === DRAFT_ID ? "/new" : "/"} />;
   const byId = new Map(saved.map((p) => [p.id, p]));
   const poses = order ? order.map((pid) => byId.get(pid)).filter((p): p is Pose => !!p) : saved;
   posesRef.current = poses;
@@ -76,7 +87,7 @@ export default function ShootPlan() {
   const openPose = (index: number) => {
     clearEditor();
     startEditor({ shootId: shoot.id, source: "existing", poses: poses.map(toEditorPose), index });
-    router.push(`/shoot/${shoot.id}/pose`);
+    router.push(poseUrl(shoot.id));
   };
 
   const move = (from: number, to: number) => {
@@ -308,12 +319,12 @@ export default function ShootPlan() {
       </div>
 
       <BottomBar fade={132}>
-        {/* add-poses always starts with an empty selection */}
-        <Link href={`/shoot/${shoot.id}/import`} onClick={clearEditor} className={secondaryBtn}>
+        {/* opens the photo picker; cancelling it leaves the plan unchanged */}
+        <button type="button" onClick={() => pick(shoot.id)} disabled={busy} className={secondaryBtn}>
           <PlusIcon size={18} color="#26211E" />
           add poses
-        </Link>
-        <Link href={`/shoot/${shoot.id}/export`} className={primaryBtn}>
+        </button>
+        <Link href={exportUrl(shoot.id)} className={primaryBtn}>
           <DownloadIcon />
           save
         </Link>

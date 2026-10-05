@@ -1,22 +1,26 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
-import { useImageUrl } from "@/lib/data";
+import { useImageDataUrl, useImageUrl } from "@/lib/data";
 import type { PhotoRef } from "@/lib/types";
 
 type Props = {
   /** A saved image id, or a photo ref (saved or just picked). */
   photo: PhotoRef | string | null | undefined;
+  /** Load as an inline data: URL (for content rendered to PNG). */
+  inline?: boolean;
   className?: string;
   style?: React.CSSProperties;
   children?: React.ReactNode;
 };
 
 /** Fills its box with a photo (object-cover). Saved images load from the data layer. */
-export function Photo({ photo, className = "", style, children }: Props) {
+export function Photo({ photo, inline = false, className = "", style, children }: Props) {
   const ref = typeof photo === "string" ? { imageId: photo } : photo;
   const imageId = ref && "imageId" in ref ? ref.imageId : null;
-  const savedUrl = useImageUrl(imageId);
+  const fileUrl = useImageUrl(inline ? null : imageId);
+  const dataUrl = useImageDataUrl(inline ? imageId : null);
+  const savedUrl = inline ? dataUrl : fileUrl;
   const src = ref && "picked" in ref ? ref.picked.url : savedUrl;
   return (
     <div

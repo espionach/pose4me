@@ -1,0 +1,13 @@
+diff --git a/node_modules/@capacitor/camera/ios/Sources/CameraPlugin/CameraPlugin.swift b/node_modules/@capacitor/camera/ios/Sources/CameraPlugin/CameraPlugin.swift
+index 968733e..fd936a5 100644
+--- a/node_modules/@capacitor/camera/ios/Sources/CameraPlugin/CameraPlugin.swift
++++ b/node_modules/@capacitor/camera/ios/Sources/CameraPlugin/CameraPlugin.swift
+@@ -593,6 +593,8 @@ private extension CameraPlugin {
+         var configuration = PHPickerConfiguration(photoLibrary: PHPhotoLibrary.shared())
+         configuration.selectionLimit = self.multiple ? (self.call?.getInt("limit") ?? 0) : 1
+         configuration.filter = .images
++        // poseforme patch: number the picks and return them in the order they were tapped.
++        configuration.selection = .ordered
+         let picker = PHPickerViewController(configuration: configuration)
+         picker.delegate = self
+         // present

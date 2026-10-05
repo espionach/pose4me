@@ -63,7 +63,23 @@ export function usePoses(shootId: string | null): Pose[] | undefined {
   return useLive(() => (shootId ? db.listPoses(shootId) : Promise.resolve([])), `poses:${shootId}`);
 }
 
-/** An object URL for a stored image; revoked when the component unmounts or the id changes. */
+/** A stored image as a self-contained data: URL (for PNG exports, which can't fetch file URLs). */
+export function useImageDataUrl(imageId: string | null | undefined): string | null {
+  const [url, setUrl] = useState<{ id: string; url: string } | null>(null);
+  useEffect(() => {
+    if (!imageId) return;
+    let live = true;
+    db.getImageDataUrl(imageId)
+      .then((u) => live && u && setUrl({ id: imageId, url: u }))
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [imageId]);
+  return url && url.id === imageId ? url.url : null;
+}
+
+/** A displayable URL for a stored image; released when the component unmounts or the id changes. */
 export function useImageUrl(imageId: string | null | undefined): string | null {
   const [url, setUrl] = useState<{ id: string; url: string } | null>(null);
   useEffect(() => {
@@ -74,7 +90,7 @@ export function useImageUrl(imageId: string | null | undefined): string | null {
       .then((u) => {
         made = u;
         if (!live) {
-          if (u) URL.revokeObjectURL(u);
+          if (u) db.releaseImageUrl(u);
           return;
         }
         if (u) setUrl({ id: imageId, url: u });
@@ -82,7 +98,7 @@ export function useImageUrl(imageId: string | null | undefined): string | null {
       .catch(() => {});
     return () => {
       live = false;
-      if (made) URL.revokeObjectURL(made);
+      if (made) db.releaseImageUrl(made);
     };
   }, [imageId]);
   return url && url.id === imageId ? url.url : null;

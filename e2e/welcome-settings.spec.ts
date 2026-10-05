@@ -30,7 +30,7 @@ test.describe("app load", () => {
   });
 
   test("no profile → any app route goes to Welcome", async ({ page }) => {
-    await page.goto("/shoot/any-shoot/export");
+    await page.goto("/shoot/export?id=any-shoot");
     await expect(page).toHaveURL(url("/welcome"));
   });
 

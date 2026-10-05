@@ -81,7 +81,7 @@ export const GripIcon = ({ size = 18, color = "#B9AFA4", r = 1.7 }: P & { r?: nu
   </svg>
 );
 
-/** 5-point star decoration used on camera roll, pose details and export. */
+/** 5-point star decoration used on pose details and export. */
 export const StarDeco = ({ size = 38, fill = "#F8E7A6", sw = 1.2, style }: { size?: number; fill?: string; sw?: number; style?: React.CSSProperties }) => (
   <svg style={{ pointerEvents: "none", ...style }} width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="#26211E" strokeWidth={sw} strokeLinejoin="round" aria-hidden>
     <path d="M12 2.5l2.8 6 6.5.7-4.9 4.4 1.4 6.4L12 16.8 6.2 20l1.4-6.4L2.7 9.2l6.5-.7z" />

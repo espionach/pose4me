@@ -11,6 +11,7 @@ import { fmtShortDate, isDone, plural } from "@/lib/format";
 import { useShoots } from "@/lib/data";
 import { deleteShoots } from "@/lib/db";
 import { useProfile } from "@/lib/profile";
+import { planUrl } from "@/lib/routes";
 import { useStore } from "@/lib/store";
 import { useLongPress } from "@/lib/useLongPress";
 
@@ -142,7 +143,7 @@ export default function MyShoots() {
             return (
               <Link
                 key={s.id}
-                href={`/shoot/${s.id}`}
+                href={planUrl(s.id)}
                 draggable={false}
                 aria-pressed={selecting ? isSel : undefined}
                 aria-label={selecting ? `${isSel ? "Deselect" : "Select"} ${s.title}` : undefined}

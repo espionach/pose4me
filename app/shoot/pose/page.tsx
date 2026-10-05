@@ -1,32 +1,44 @@
 "use client";
 
-import Link from "next/link";
-import { useParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { BackIcon, BurstDeco, CameraIcon, MinusIcon, PlusIcon, StarDeco } from "@/components/icons";
 import { Photo } from "@/components/Photo";
-import { ArrowButton, BottomBar, IconButton, PagerDots, primaryBtn, Screen } from "@/components/ui";
+import { ArrowButton, BottomBar, ConfirmSheet, IconButton, PagerDots, primaryBtn, Screen } from "@/components/ui";
 import { plural } from "@/lib/format";
 import { useNav } from "@/lib/nav";
+import { showNotice } from "@/lib/notice";
+import { PhotoAccessError, pickPhotos } from "@/lib/photos";
+import { planUrl, useShootId } from "@/lib/routes";
 import { DRAFT_ID, useStore } from "@/lib/store";
+import { PHOTO_ACCESS_HELP } from "@/lib/usePickPoses";
 import type { PosePatch } from "@/lib/types";
 
 const textInput = "box-border h-12 rounded-[18px] bg-surface px-4 text-[16px] font-semibold shadow-paper outline-none";
 
-export default function PoseDetails() {
-  const { id } = useParams<{ id: string }>();
+export default function Page() {
+  return (
+    <Suspense>
+      <PoseDetails />
+    </Suspense>
+  );
+}
+
+function PoseDetails() {
+  const id = useShootId();
   const nav = useNav();
-  const { state, editPose, setIndex, commitEditor } = useStore();
+  const { state, editPose, setIndex, commitEditor, clearEditor, replacePhoto, toPicked } = useStore();
   const [busy, setBusy] = useState(false);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
   const editor = state.editor?.shootId === id && state.editor.poses.length ? state.editor : null;
   const saving = useRef(false);
-  const hasDraft = !!state.draft;
+  // Where the photo picker was opened from: New shoot (for the draft) or the shoot's plan.
+  const launcher = id === DRAFT_ID ? "/new" : planUrl(id);
 
   // Nothing being edited (refresh after the flow ended, stale link): go to the nearest valid parent.
   useEffect(() => {
     if (editor || saving.current) return;
-    nav.replace(id !== DRAFT_ID ? `/shoot/${id}` : hasDraft ? `/shoot/${DRAFT_ID}/import` : "/new");
-  }, [editor, id, nav, hasDraft]);
+    nav.replace(id && id !== DRAFT_ID ? planUrl(id) : "/new");
+  }, [editor, id, nav]);
 
   if (!editor) return <div className="paper min-h-dvh" />;
 
@@ -44,8 +56,8 @@ export default function PoseDetails() {
     try {
       const shootId = await commitEditor();
       // Rewind past the finished flow so browser back can't return into it.
-      if (id === DRAFT_ID) nav.unwindTo("/", `/shoot/${shootId}`);
-      else nav.unwindTo(`/shoot/${shootId}`);
+      if (id === DRAFT_ID) nav.unwindTo("/", planUrl(shootId));
+      else nav.unwindTo(planUrl(shootId));
     } catch {
       // Nothing was saved; the storage banner explains. Stay here with everything intact.
       saving.current = false;
@@ -53,10 +65,32 @@ export default function PoseDetails() {
     }
   };
 
+  // Back: poses opened from a card are already saved. Freshly picked ones can't go back into
+  // the native picker, so return to the screen that opened it — asking first if anything changed.
+  const leave = () => {
+    clearEditor();
+    nav.back(launcher);
+  };
+  const back = () => {
+    if (editor.source === "existing") nav.back(planUrl(id));
+    else if (editor.edited) setConfirmDiscard(true);
+    else leave();
+  };
+
+  // The polaroid's camera button: pick one photo to replace this pose's image (cancel changes nothing).
+  const changePhoto = async () => {
+    try {
+      const blobs = await pickPhotos({ limit: 1 });
+      if (blobs) await replacePhoto(toPicked(blobs)[0]);
+    } catch (err) {
+      showNotice(err instanceof PhotoAccessError ? PHOTO_ACCESS_HELP : "couldn't use that photo. please try a different one.");
+    }
+  };
+
   return (
     <Screen gap={10} bottomSpace={108}>
       <div className="flex items-center justify-between">
-        <IconButton onClick={() => nav.back(editor.source === "new" ? `/shoot/${id}/import` : `/shoot/${id}`)} label={editor.source === "new" ? "Back to camera roll" : "Back to shoot plan"}>
+        <IconButton onClick={back} label={editor.source === "new" && id === DRAFT_ID ? "Back to new shoot" : "Back to shoot plan"}>
           <BackIcon />
         </IconButton>
         <div className="text-[22px] font-bold" aria-live="polite">
@@ -74,13 +108,14 @@ export default function PoseDetails() {
           >
             <Photo photo={p.photo} className="h-full w-full" />
             <div className="absolute -top-2.5 left-16 h-5 w-[60px] rotate-3 bg-[rgba(247,198,207,.95)]" />
-            <Link
-              href={`/shoot/${id}/import?replace=1`}
+            <button
+              type="button"
+              onClick={changePhoto}
               aria-label="Change photo"
               className="absolute -top-4 -right-4 z-[6] flex h-11 w-11 items-center justify-center rounded-full border-[1.5px] border-line bg-surface shadow-[0_4px_10px_rgba(38,33,30,.14)]"
             >
               <CameraIcon size={18} />
-            </Link>
+            </button>
           </div>
 
           {/* decorations: ≥5px from every button */}
@@ -149,6 +184,10 @@ export default function PoseDetails() {
           save {plural(poses.length, "pose")}
         </button>
       </BottomBar>
+
+      {confirmDiscard && (
+        <ConfirmSheet title="discard these poses?" confirmLabel="discard" cancelLabel="keep editing" onConfirm={leave} onCancel={() => setConfirmDiscard(false)} />
+      )}
     </Screen>
   );
 }

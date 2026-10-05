@@ -1,9 +1,9 @@
 "use client";
 
 /*
- * In-memory state for flows that aren't saved yet: the New shoot draft, the photos picked
- * in the camera roll, and the Pose details working set. Nothing here is written to the
- * device until "save N poses" (commitEditor). Saved data lives in lib/db.ts.
+ * In-memory state for flows that aren't saved yet: the New shoot draft and the Pose
+ * details working set (with photos just picked). Nothing here is written to the device
+ * until "save N poses" (commitEditor). Saved data lives in lib/db.ts.
  */
 
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
@@ -11,24 +11,23 @@ import { useShoot } from "./data";
 import * as db from "./db";
 import type { Editor, EditorPose, NewPose, PhotoRef, PickedPhoto, Pose, PosePatch, ShootDraft } from "./types";
 
-/** Route id for the draft shoot while it moves through Camera roll → Pose details. */
+/** Route id for the draft shoot while it moves through the picker → Pose details. */
 export const DRAFT_ID = "new";
 
-type State = { draft: ShootDraft | null; editor: Editor | null; roll: PickedPhoto[] };
-const initial: State = { draft: null, editor: null, roll: [] };
+type State = { draft: ShootDraft | null; editor: Editor | null };
+const initial: State = { draft: null, editor: null };
 
 export const newEditorPose = (photo: PhotoRef): EditorPose => ({ id: crypto.randomUUID(), photo, title: "", who: "", minutes: 3, note: "" });
 export const toEditorPose = (p: Pose): EditorPose => ({ id: p.id, photo: { imageId: p.imageId }, title: p.title, who: p.who, minutes: p.minutes, note: p.note });
-
-// Object URLs for picked photos are revoked a moment after a flow ends, so the screen
-// that's leaving never shows a broken image.
-const revokeLater = (photos: PickedPhoto[]) => setTimeout(() => photos.forEach((p) => URL.revokeObjectURL(p.url)), 2000);
 
 function useStoreValue() {
   const [state, setState] = useState<State>(initial);
   const stateRef = useRef(state);
   stateRef.current = state;
   const seq = useRef(0);
+  // Object URLs for picked photos; released a moment after their flow ends so the
+  // screen that's leaving never shows a broken image.
+  const pickedUrls = useRef<string[]>([]);
 
   const set = useCallback((fn: (s: State) => State) => {
     setState((s) => {
@@ -38,31 +37,38 @@ function useStoreValue() {
     });
   }, []);
 
+  const releasePicked = useCallback(() => {
+    const urls = pickedUrls.current;
+    pickedUrls.current = [];
+    if (urls.length) setTimeout(() => urls.forEach((u) => URL.revokeObjectURL(u)), 2000);
+  }, []);
+
   const actions = useMemo(
     () => ({
+      /** Wraps freshly picked (already resized) photos so screens can show them before saving. */
+      toPicked(blobs: Blob[]): PickedPhoto[] {
+        return blobs.map((blob) => {
+          const url = URL.createObjectURL(blob);
+          pickedUrls.current.push(url);
+          return { key: `pick-${++seq.current}`, blob, url };
+        });
+      },
       startDraft(draft: ShootDraft) {
         set((s) => ({ ...s, draft }));
       },
-      /** Abandons everything in progress (draft, picks, unsaved poses). Saved data is untouched. */
+      /** Abandons everything in progress (draft, unsaved poses). Saved data is untouched. */
       discardInProgress() {
-        const { roll } = stateRef.current;
-        if (roll.length) revokeLater(roll);
+        releasePicked();
         set(() => initial);
       },
-      /** Adds freshly picked photos (already resized) to this session's camera roll. Returns them. */
-      addToRoll(blobs: Blob[]): PickedPhoto[] {
-        const picked = blobs.map((blob) => ({ key: `pick-${++seq.current}`, blob, url: URL.createObjectURL(blob) }));
-        set((s) => ({ ...s, roll: [...picked.slice().reverse(), ...s.roll] }));
-        return picked;
+      /** Starts Pose details on a set of poses. */
+      startEditor(editor: Omit<Editor, "edited">) {
+        set((s) => ({ ...s, editor: { ...editor, edited: false } }));
       },
-      startEditor(editor: Editor) {
-        set((s) => ({ ...s, editor }));
-      },
-      /** Ends the current editor and its picks (e.g. "+ add poses" starts a fresh selection). */
+      /** Ends the current editor (unsaved picks are dropped). The New shoot draft is kept. */
       clearEditor() {
-        const { roll } = stateRef.current;
-        if (roll.length) revokeLater(roll);
-        set((s) => ({ ...s, editor: null, roll: [] }));
+        releasePicked();
+        set((s) => ({ ...s, editor: null }));
       },
       setIndex(index: number) {
         set((s) => (s.editor ? { ...s, editor: { ...s.editor, index: Math.max(0, Math.min(s.editor.poses.length - 1, index)) } } : s));
@@ -72,7 +78,9 @@ function useStoreValue() {
         const e = stateRef.current.editor;
         if (!e) return;
         const pose = e.poses[e.index];
-        set((s) => (s.editor ? { ...s, editor: { ...s.editor, poses: s.editor.poses.map((p, i) => (i === s.editor!.index ? { ...p, ...patch } : p)) } } : s));
+        set((s) =>
+          s.editor ? { ...s, editor: { ...s.editor, edited: true, poses: s.editor.poses.map((p, i) => (i === s.editor!.index ? { ...p, ...patch } : p)) } } : s,
+        );
         if (e.source === "existing") db.updatePose(pose.id, patch).catch(() => {}); // failures show the storage banner
       },
       /** Swaps the current pose's photo. For a saved pose, the new image is stored and the old one deleted. */
@@ -91,18 +99,14 @@ function useStoreValue() {
           }
           photo = { imageId };
         }
-        set((s) => {
-          if (!s.editor) return s;
-          const keys = s.editor.keys && !s.editor.keys.includes(picked.key) ? s.editor.keys.map((k, i) => (i === s.editor!.index ? picked.key : k)) : s.editor.keys;
-          return { ...s, editor: { ...s.editor, keys, poses: s.editor.poses.map((p, i) => (i === s.editor!.index ? { ...p, photo } : p)) } };
-        });
+        set((s) => (s.editor ? { ...s, editor: { ...s.editor, edited: true, poses: s.editor.poses.map((p, i) => (i === s.editor!.index ? { ...p, photo } : p)) } } : s));
       },
       /**
        * "save N poses": writes picked photos and new poses (or creates the draft shoot with them).
        * Returns the id of the shoot saved into. On failure nothing is left half-saved.
        */
       async commitEditor(): Promise<string> {
-        const { editor: e, draft, roll } = stateRef.current;
+        const { editor: e, draft } = stateRef.current;
         if (!e) throw new Error("nothing to save");
         if (e.source === "existing") {
           set((s) => ({ ...s, editor: null }));
@@ -127,7 +131,7 @@ function useStoreValue() {
           } else {
             await db.savePoses(shootId, poses);
           }
-          if (roll.length) revokeLater(roll);
+          releasePicked();
           set(() => initial);
           return shootId;
         } catch (err) {
@@ -136,7 +140,7 @@ function useStoreValue() {
         }
       },
     }),
-    [set],
+    [set, releasePicked],
   );
 
   return { state, ...actions };

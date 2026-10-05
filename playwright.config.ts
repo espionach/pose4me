@@ -14,9 +14,10 @@ export default defineConfig({
     channel: "chrome",
     trace: "retain-on-failure",
   },
-  // A production build on its own port: fast, and doesn't disturb `npm run dev` on 3000.
+  // The real static export (what ships in the iOS app), served on its own port so it
+  // doesn't disturb `npm run dev` on 3000.
   webServer: {
-    command: "npm run build && npx next start -p 3100",
+    command: "npm run build && npx serve out -l 3100 --no-request-logging",
     // Exposes window.shootPlanner.seed()/stats() so tests can create data and count rows.
     env: { NEXT_PUBLIC_DEV_SEED: "1" },
     url: "http://localhost:3100",

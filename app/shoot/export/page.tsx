@@ -1,22 +1,33 @@
 "use client";
 
 import { toPng } from "html-to-image";
-import { useParams } from "next/navigation";
-import { forwardRef, useRef, useState } from "react";
+import { Media } from "@capacitor-community/media";
+import { Capacitor } from "@capacitor/core";
+import { forwardRef, Suspense, useRef, useState } from "react";
 import { BackIcon, DownloadIcon, StarDeco } from "@/components/icons";
 import { Photo } from "@/components/Photo";
 import { ArrowButton, BottomBar, IconButton, PagerDots, primaryBtn, Screen } from "@/components/ui";
 import { fmtWhen, plural, poseNum, splitWho, totalMinutes } from "@/lib/format";
 import { useNav } from "@/lib/nav";
 import { usePoses, useShoot } from "@/lib/data";
+import { showNotice } from "@/lib/notice";
+import { planUrl, useShootId } from "@/lib/routes";
 import type { Pose, Shoot } from "@/lib/types";
 import { MissingShoot } from "../MissingShoot";
 
 const PER_PAGE = 4;
 type Layout = "list" | "grid";
 
-export default function ExportScreen() {
-  const { id } = useParams<{ id: string }>();
+export default function Page() {
+  return (
+    <Suspense>
+      <ExportScreen />
+    </Suspense>
+  );
+}
+
+function ExportScreen() {
+  const id = useShootId();
   const shoot = useShoot(id);
   const poses = usePoses(id);
   const nav = useNav();
@@ -24,6 +35,7 @@ export default function ExportScreen() {
   const [layout, setLayout] = useState<Layout>("list");
   const [notes, setNotes] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [saved, setSaved] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
 
   if (shoot === undefined || poses === undefined) return <div className="paper min-h-dvh" />;
@@ -41,13 +53,25 @@ export default function ExportScreen() {
       const nodes = Array.from(exportRef.current.children) as HTMLElement[];
       // Render every page first, then start all the downloads together: one PNG per
       // page, each ending in its page number so names never collide.
-      const urls = await Promise.all(nodes.map((node) => toPng(node, { pixelRatio: 3, backgroundColor: "#FFFFFF" })));
-      urls.forEach((url, i) => {
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${slug}-plan-page-${i + 1}.png`;
-        a.click();
-      });
+      const render = (node: HTMLElement) => toPng(node, { pixelRatio: 3, backgroundColor: "#FFFFFF" });
+      // WebKit (the iOS app) leaves images out of html-to-image's first render; the second has them.
+      if (Capacitor.isNativePlatform()) await Promise.all(nodes.map(render));
+      const urls = await Promise.all(nodes.map(render));
+      if (Capacitor.isNativePlatform()) {
+        // iPhone: straight into Photos (asks for add-only access the first time).
+        for (const url of urls) await Media.savePhoto({ path: url });
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2500);
+      } else {
+        urls.forEach((url, i) => {
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${slug}-plan-page-${i + 1}.png`;
+          a.click();
+        });
+      }
+    } catch {
+      showNotice("couldn't save to Photos. check Settings › poseforme › Photos and allow adding photos.");
     } finally {
       setBusy(false);
     }
@@ -56,7 +80,7 @@ export default function ExportScreen() {
   return (
     <Screen bg="deep" bottomSpace={120}>
       <div className="flex items-center justify-between">
-        <IconButton onClick={() => nav.back(`/shoot/${shoot.id}`)} label="Back to plan">
+        <IconButton onClick={() => nav.back(planUrl(shoot.id))} label="Back to plan">
           <BackIcon />
         </IconButton>
         <h1 className="m-0 font-serif text-[22px] font-normal">your shoot plan</h1>
@@ -120,7 +144,7 @@ export default function ExportScreen() {
       <BottomBar>
         <button type="button" onClick={download} disabled={busy} className={`${primaryBtn} disabled:opacity-70`}>
           <DownloadIcon />
-          {busy ? "saving…" : "save to photos"}
+          {busy ? "saving…" : saved ? "saved to photos" : "save to photos"}
         </button>
       </BottomBar>
 
@@ -138,13 +162,13 @@ const ExportSheet = forwardRef<HTMLDivElement, PageProps>(function ExportSheet(p
   return (
     <div ref={ref} className="flex flex-col gap-4">
       {Array.from({ length: props.pages }, (_, i) => (
-        <PlanPage key={i} {...props} index={i} />
+        <PlanPage key={i} {...props} index={i} inline />
       ))}
     </div>
   );
 });
 
-function PlanPage({ shoot, poses, layout, notes, pages, index }: PageProps & { index: number }) {
+function PlanPage({ shoot, poses, layout, notes, pages, index, inline = false }: PageProps & { index: number; inline?: boolean }) {
   const start = index * PER_PAGE;
   const rows = poses.slice(start, start + PER_PAGE);
   const meta = (p: Pose) => [splitWho(p.who).join(", "), `${p.minutes} min`].filter(Boolean).join(" · ");
@@ -165,7 +189,7 @@ function PlanPage({ shoot, poses, layout, notes, pages, index }: PageProps & { i
         ? rows.map((p, i) => (
             <div key={p.id} className="flex items-center gap-2.5">
               <div className="w-4 shrink-0 text-[15px] font-bold">{poseNum(start + i)}</div>
-              <Photo photo={p.imageId} className="h-14 w-11 shrink-0 rounded-lg" />
+              <Photo photo={p.imageId} inline={inline} className="h-14 w-11 shrink-0 rounded-lg" />
               <div className="flex min-w-0 grow flex-col gap-0.5">
                 <div className="line-clamp-2 text-[10px] font-bold">{p.title || "untitled pose"}</div>
                 <div className="text-[9px] text-muted">{meta(p)}</div>
@@ -177,7 +201,7 @@ function PlanPage({ shoot, poses, layout, notes, pages, index }: PageProps & { i
             <div className="grid grid-cols-2 gap-x-3 gap-y-2.5">
               {rows.map((p, i) => (
                 <div key={p.id} className="flex min-w-0 flex-col gap-1">
-                  <Photo photo={p.imageId} className="h-24 rounded-lg">
+                  <Photo photo={p.imageId} inline={inline} className="h-24 rounded-lg">
                     <span className="absolute top-[5px] left-[5px] box-border flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[10px] font-bold">
                       {poseNum(start + i)}
                     </span>

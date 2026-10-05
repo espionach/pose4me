@@ -1,52 +1,20 @@
 /*
- * The app's data layer — the ONLY module that reads or writes stored data.
+ * The app's data layer — the ONLY module screens use to read or write stored data.
  *
- * Everything lives on this device in IndexedDB (via Dexie). Screens call these async
- * functions with plain types; a native (Capacitor) implementation can replace this file
- * later without screens changing. Images are always referenced by imageId.
+ * Everything is stored on this device:
+ *   - web (and Playwright tests): IndexedDB via Dexie        → lib/db/web.ts
+ *   - iOS (Capacitor): SQLite + image files in the app's data → lib/db/native.ts
+ * Both implement the same Backend; this file adds change notifications, friendly
+ * errors and the persistent-storage request. Images are always referenced by imageId.
  */
 
-import Dexie, { type Table } from "dexie";
+import { Capacitor } from "@capacitor/core";
+import type { Backend } from "./db/backend";
+import { nativeBackend } from "./db/native";
+import { webBackend } from "./db/web";
 import type { NewPose, Pose, PosePatch, Profile, Shoot, ShootFields } from "./types";
 
-// --- schema ------------------------------------------------------------------------------
-
-type ProfileRow = { id: "me"; display_name: string; updated_at: string };
-type ShootRow = { id: string; title: string; shoot_date: string | null; shoot_time: string | null; created_at: string; updated_at: string };
-type PoseRow = {
-  id: string;
-  photoshoot_id: string;
-  position: number;
-  title: string;
-  who: string;
-  duration_minutes: number;
-  notes: string;
-  image_id: string;
-  created_at: string;
-  updated_at: string;
-};
-type ImageRow = { id: string; blob: Blob };
-
-class ShootPlannerDB extends Dexie {
-  profile!: Table<ProfileRow, string>;
-  photoshoots!: Table<ShootRow, string>;
-  poses!: Table<PoseRow, string>;
-  images!: Table<ImageRow, string>;
-
-  constructor() {
-    super("shoot-planner");
-    // Bump the version and add a .upgrade() here for any future schema change.
-    this.version(1).stores({
-      profile: "id",
-      photoshoots: "id, created_at",
-      poses: "id, photoshoot_id, [photoshoot_id+position], image_id",
-      images: "id",
-    });
-  }
-}
-
-let _db: ShootPlannerDB | null = null;
-const db = () => (_db ??= new ShootPlannerDB());
+const backend: Backend = Capacitor.isNativePlatform() ? nativeBackend : webBackend;
 
 // --- change notifications + errors -------------------------------------------------------
 
@@ -77,8 +45,11 @@ export function onStorageError(listener: (e: StorageError) => void) {
 }
 
 function friendly(err: unknown): StorageError {
-  const name = (err as { name?: string; inner?: { name?: string } })?.inner?.name ?? (err as { name?: string })?.name;
-  if (name === "QuotaExceededError") return new StorageError("couldn't save — your device storage is full. free up some space and try again.", err);
+  const e = err as { name?: string; message?: string; inner?: { name?: string } };
+  const name = e?.inner?.name ?? e?.name;
+  const text = String(e?.message ?? "").toLowerCase();
+  if (name === "QuotaExceededError" || /disk is full|no space|quota/.test(text))
+    return new StorageError("couldn't save — your device storage is full. free up some space and try again.", err);
   return new StorageError("couldn't save that change. please try again.", err);
 }
 
@@ -87,13 +58,13 @@ let persistAsked = false;
 /** Runs a write: waits for setup, reports failures, notifies listeners, asks for persistent storage once. */
 async function write<T>(fn: () => Promise<T>): Promise<T> {
   try {
-    await ready();
+    await backend.ready();
     const result = await fn();
     notify();
     if (!persistAsked) {
       persistAsked = true;
-      // Ask the browser not to evict our data under storage pressure. Best effort.
-      navigator.storage?.persist?.().catch(() => {});
+      // Ask the browser not to evict our data under storage pressure. Best effort (web only).
+      if (!Capacitor.isNativePlatform()) navigator.storage?.persist?.().catch(() => {});
     }
     return result;
   } catch (err) {
@@ -104,259 +75,49 @@ async function write<T>(fn: () => Promise<T>): Promise<T> {
 }
 
 async function read<T>(fn: () => Promise<T>): Promise<T> {
-  await ready();
+  await backend.ready();
   return fn();
 }
 
-const now = () => new Date().toISOString();
-const newId = () => crypto.randomUUID();
-
-// --- mapping -----------------------------------------------------------------------------
-
-const toShoot = (r: ShootRow): Shoot => ({ id: r.id, title: r.title, date: r.shoot_date, time: r.shoot_time, createdAt: r.created_at, updatedAt: r.updated_at });
-const toPose = (r: PoseRow): Pose => ({
-  id: r.id,
-  shootId: r.photoshoot_id,
-  position: r.position,
-  title: r.title,
-  who: r.who,
-  minutes: r.duration_minutes,
-  note: r.notes,
-  imageId: r.image_id,
-  createdAt: r.created_at,
-  updatedAt: r.updated_at,
-});
-const minutes = (n: number) => Math.max(1, Math.round(n) || 1);
-
 // --- profile -----------------------------------------------------------------------------
 
-export async function getProfile(): Promise<Profile | null> {
-  const row = await read(() => db().profile.get("me"));
-  return row ? { displayName: row.display_name } : null;
-}
-
-export async function saveProfile(profile: Profile): Promise<Profile> {
-  return write(async () => {
-    await db().profile.put({ id: "me", display_name: profile.displayName, updated_at: now() });
-    return profile;
-  });
-}
+export const getProfile = (): Promise<Profile | null> => read(() => backend.getProfile());
+export const saveProfile = (profile: Profile): Promise<Profile> => write(() => backend.saveProfile(profile).then(() => profile));
 
 // --- shoots ------------------------------------------------------------------------------
 
 /** All shoots, newest first. */
-export async function listShoots(): Promise<Shoot[]> {
-  const rows = await read(() => db().photoshoots.orderBy("created_at").reverse().toArray());
-  return rows.map(toShoot);
-}
-
-export async function getShoot(id: string): Promise<Shoot | null> {
-  const row = await read(() => db().photoshoots.get(id));
-  return row ? toShoot(row) : null;
-}
-
+export const listShoots = (): Promise<Shoot[]> => read(() => backend.listShoots());
+export const getShoot = (id: string): Promise<Shoot | null> => read(() => backend.getShoot(id));
 /** Creates a shoot, optionally with its first poses, in one transaction. */
-export async function createShoot(fields: ShootFields, poses: NewPose[] = []): Promise<Shoot> {
-  return write(() =>
-    db().transaction("rw", db().photoshoots, db().poses, async () => {
-      const t = now();
-      const row: ShootRow = { id: newId(), title: fields.title, shoot_date: fields.date || null, shoot_time: fields.time || null, created_at: t, updated_at: t };
-      await db().photoshoots.add(row);
-      await db().poses.bulkAdd(poses.map((p, i) => poseRow(row.id, i, p, t)));
-      return toShoot(row);
-    }),
-  );
-}
-
-export async function updateShoot(id: string, patch: Partial<ShootFields>): Promise<void> {
-  await write(async () => {
-    const changes: Partial<ShootRow> = { updated_at: now() };
-    if (patch.title !== undefined) changes.title = patch.title;
-    if (patch.date !== undefined) changes.shoot_date = patch.date || null;
-    if (patch.time !== undefined) changes.shoot_time = patch.time || null;
-    await db().photoshoots.update(id, changes);
-  });
-}
-
+export const createShoot = (fields: ShootFields, poses: NewPose[] = []): Promise<Shoot> => write(() => backend.createShoot(fields, poses));
+export const updateShoot = (id: string, patch: Partial<ShootFields>): Promise<void> => write(() => backend.updateShoot(id, patch));
 /** Deletes shoots with all their poses and images. */
-export async function deleteShoots(ids: string[]): Promise<void> {
-  if (!ids.length) return;
-  await write(() =>
-    db().transaction("rw", db().photoshoots, db().poses, db().images, async () => {
-      const poses = await db().poses.where("photoshoot_id").anyOf(ids).toArray();
-      await db().images.bulkDelete(poses.map((p) => p.image_id));
-      await db().poses.bulkDelete(poses.map((p) => p.id));
-      await db().photoshoots.bulkDelete(ids);
-    }),
-  );
-}
+export const deleteShoots = (ids: string[]): Promise<void> => (ids.length ? write(() => backend.deleteShoots(ids)) : Promise.resolve());
 
 // --- poses -------------------------------------------------------------------------------
 
-function poseRow(shootId: string, position: number, p: NewPose, t: string): PoseRow {
-  return {
-    id: newId(),
-    photoshoot_id: shootId,
-    position,
-    title: p.title,
-    who: p.who,
-    duration_minutes: minutes(p.minutes),
-    notes: p.note,
-    image_id: p.imageId,
-    created_at: t,
-    updated_at: t,
-  };
-}
-
 /** A shoot's poses in plan order. */
-export async function listPoses(shootId: string): Promise<Pose[]> {
-  const rows = await read(() => db().poses.where("[photoshoot_id+position]").between([shootId, Dexie.minKey], [shootId, Dexie.maxKey]).toArray());
-  return rows.map(toPose);
-}
-
+export const listPoses = (shootId: string): Promise<Pose[]> => read(() => backend.listPoses(shootId));
 /** Appends poses to the end of a shoot, in one transaction. */
-export async function savePoses(shootId: string, poses: NewPose[]): Promise<Pose[]> {
-  return write(() =>
-    db().transaction("rw", db().photoshoots, db().poses, async () => {
-      const t = now();
-      const start = await db().poses.where("photoshoot_id").equals(shootId).count();
-      const rows = poses.map((p, i) => poseRow(shootId, start + i, p, t));
-      await db().poses.bulkAdd(rows);
-      await db().photoshoots.update(shootId, { updated_at: t });
-      return rows.map(toPose);
-    }),
-  );
-}
-
-/** Updates a pose. Replacing its image deletes the old image in the same transaction. */
-export async function updatePose(id: string, patch: PosePatch): Promise<void> {
-  await write(() =>
-    db().transaction("rw", db().poses, db().images, async () => {
-      const row = await db().poses.get(id);
-      if (!row) return;
-      const changes: Partial<PoseRow> = { updated_at: now() };
-      if (patch.title !== undefined) changes.title = patch.title;
-      if (patch.who !== undefined) changes.who = patch.who;
-      if (patch.note !== undefined) changes.notes = patch.note;
-      if (patch.minutes !== undefined) changes.duration_minutes = minutes(patch.minutes);
-      if (patch.imageId !== undefined && patch.imageId !== row.image_id) {
-        changes.image_id = patch.imageId;
-        await db().images.delete(row.image_id);
-      }
-      await db().poses.update(id, changes);
-    }),
-  );
-}
-
+export const savePoses = (shootId: string, poses: NewPose[]): Promise<Pose[]> => write(() => backend.savePoses(shootId, poses));
+/** Updates a pose. Replacing its image deletes the old image. */
+export const updatePose = (id: string, patch: PosePatch): Promise<void> => write(() => backend.updatePose(id, patch));
 /** Deletes poses and their images, and closes the gaps in each shoot's order. */
-export async function deletePoses(ids: string[]): Promise<void> {
-  if (!ids.length) return;
-  await write(() =>
-    db().transaction("rw", db().poses, db().images, async () => {
-      const rows = (await db().poses.bulkGet(ids)).filter((r): r is PoseRow => !!r);
-      await db().images.bulkDelete(rows.map((r) => r.image_id));
-      await db().poses.bulkDelete(ids);
-      for (const shootId of new Set(rows.map((r) => r.photoshoot_id))) {
-        const left = await db().poses.where("[photoshoot_id+position]").between([shootId, Dexie.minKey], [shootId, Dexie.maxKey]).toArray();
-        await db().poses.bulkUpdate(left.map((r, i) => ({ key: r.id, changes: { position: i } })));
-      }
-    }),
-  );
-}
-
+export const deletePoses = (ids: string[]): Promise<void> => (ids.length ? write(() => backend.deletePoses(ids)) : Promise.resolve());
 /** Sets a shoot's pose order in one write. `orderedIds` must list every pose in the shoot. */
-export async function reorderPoses(shootId: string, orderedIds: string[]): Promise<void> {
-  await write(() =>
-    db().transaction("rw", db().poses, async () => {
-      const t = now();
-      await db().poses.bulkUpdate(orderedIds.map((id, position) => ({ key: id, changes: { position, updated_at: t } })));
-    }),
-  );
-}
+export const reorderPoses = (shootId: string, orderedIds: string[]): Promise<void> => write(() => backend.reorderPoses(shootId, orderedIds));
 
 // --- images ------------------------------------------------------------------------------
 
 /** Stores an image (callers resize first — see lib/images.ts) and returns its id. */
-export async function saveImage(blob: Blob): Promise<string> {
-  return write(async () => {
-    const id = newId();
-    await db().images.add({ id, blob });
-    return id;
-  });
-}
+export const saveImage = (blob: Blob): Promise<string> => write(() => backend.saveImage(blob));
+/** A URL for displaying an image, or null if it doesn't exist. Pass it to releaseImageUrl when done. */
+export const getImageUrl = (imageId: string): Promise<string | null> => read(() => backend.getImageUrl(imageId));
+export const releaseImageUrl = (url: string): void => backend.releaseImageUrl(url);
+/** The image as a self-contained data: URL — for rendering exports to PNG. */
+export const getImageDataUrl = (imageId: string): Promise<string | null> => read(() => backend.getImageDataUrl(imageId));
+export const deleteImage = (imageId: string): Promise<void> => write(() => backend.deleteImage(imageId));
 
-/** An object URL for an image, or null if it doesn't exist. Callers must URL.revokeObjectURL it. */
-export async function getImageUrl(imageId: string): Promise<string | null> {
-  const row = await read(() => db().images.get(imageId));
-  return row ? URL.createObjectURL(row.blob) : null;
-}
-
-export async function deleteImage(imageId: string): Promise<void> {
-  await write(() => db().images.delete(imageId));
-}
-
-// --- one-time import of data saved by earlier builds (localStorage) ---------------------
-
-const LEGACY_STATE = "shoot-planner:v1";
-const LEGACY_PROFILE = "shoot-planner:profile";
-const LEGACY_MOCK_SHOOTS = new Set(["golden-hour", "downtown-film", "bday-dinner"]);
-
-type LegacyPose = { photoUri: string; title: string; who: string; minutes: number; note: string };
-type LegacyShoot = { id: string; title: string; date: string; time: string; poses: LegacyPose[] };
-
-async function importLegacy(d: ShootPlannerDB) {
-  let rawState: string | null = null;
-  let rawProfile: string | null = null;
-  try {
-    rawState = localStorage.getItem(LEGACY_STATE);
-    rawProfile = localStorage.getItem(LEGACY_PROFILE);
-  } catch {
-    return;
-  }
-  if (!rawState && !rawProfile) return;
-  try {
-    const shoots: LegacyShoot[] = (rawState ? JSON.parse(rawState).shoots : null) ?? [];
-    const profile: Profile | null = rawProfile ? JSON.parse(rawProfile) : null;
-    const images: ImageRow[] = [];
-    const shootRows: ShootRow[] = [];
-    const poseRows: PoseRow[] = [];
-    const t = now();
-    for (const s of shoots) {
-      if (LEGACY_MOCK_SHOOTS.has(s.id)) continue;
-      const row: ShootRow = { id: newId(), title: s.title, shoot_date: s.date || null, shoot_time: s.time || null, created_at: t, updated_at: t };
-      shootRows.push(row);
-      let position = 0;
-      for (const p of s.poses ?? []) {
-        if (!p.photoUri?.startsWith("data:")) continue; // old stick-figure demo photos
-        const imageId = newId();
-        images.push({ id: imageId, blob: await (await fetch(p.photoUri)).blob() });
-        poseRows.push(poseRow(row.id, position++, { ...p, imageId }, t));
-      }
-    }
-    await d.transaction("rw", d.profile, d.photoshoots, d.poses, d.images, async () => {
-      if (profile?.displayName && !(await d.profile.get("me"))) await d.profile.put({ id: "me", display_name: profile.displayName, updated_at: t });
-      await d.images.bulkAdd(images);
-      await d.photoshoots.bulkAdd(shootRows);
-      await d.poses.bulkAdd(poseRows);
-    });
-    localStorage.removeItem(LEGACY_STATE);
-    localStorage.removeItem(LEGACY_PROFILE);
-  } catch {
-    // Leave the old data in place and try again next launch.
-  }
-}
-
-let _ready: Promise<void> | null = null;
-/** Opens the database (and imports any legacy data) once. */
-function ready() {
-  return (_ready ??= db()
-    .open()
-    .then((d) => importLegacy(d as ShootPlannerDB)));
-}
-
-/** Row counts, for the dev tools and tests. */
-export async function stats() {
-  await ready();
-  const d = db();
-  return { profile: await d.profile.count(), photoshoots: await d.photoshoots.count(), poses: await d.poses.count(), images: await d.images.count() };
-}
+/** Row/file counts, for the dev tools and tests. */
+export const stats = () => read(() => backend.stats());
